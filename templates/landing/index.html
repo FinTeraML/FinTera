@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+
+{% block title %}FinTera - Financial Technology Solutions{% endblock %}
+
+{% block content %}
+<!-- Navigation -->
+<nav class="navbar bg-base-100 shadow-lg px-4 lg:px-8">
+    <div class="navbar-start">
+        <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                <i class="ri-menu-line text-xl"></i>
+            </div>
+            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+        <a class="btn btn-ghost text-lg lg:text-xl font-bold text-primary">
+            <i class="ri-line-chart-line text-xl lg:text-2xl"></i>
+            FinTera
+        </a>
+    </div>
+    <div class="navbar-center hidden lg:flex">
+        <ul class="menu menu-horizontal px-1">
+            <li><a href="#features" class="hover:text-primary">Features</a></li>
+            <li><a href="#services" class="hover:text-primary">Services</a></li>
+            <li><a href="#about" class="hover:text-primary">About</a></li>
+            <li><a href="#contact" class="hover:text-primary">Contact</a></li>
+        </ul>
+    </div>
+    <div class="navbar-end">
+        <a class="btn btn-primary btn-xs sm:btn-sm mr-2">Sign In</a>
+        <a class="btn btn-outline btn-xs sm:btn-sm">Get Started</a>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
+    <div class="hero-content text-center px-4">
+        <div class="max-w-4xl">
+            <div class="mb-6 lg:mb-8">
+                <div class="flex justify-center mb-4 lg:mb-6">
+                    <div class="bg-primary/10 p-4 lg:p-6 rounded-full">
+                        <i class="ri-stock-line text-4xl lg:text-6xl text-primary"></i>
+                    </div>
+                </div>
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 lg:mb-6 text-base-content">
+                    Welcome to <span class="text-primary">FinTera</span>
+                </h1>
+                <p class="text-lg lg:text-xl mb-6 lg:mb-8 text-base-content/80 max-w-2xl mx-auto px-4">
+                    Revolutionizing financial technology with cutting-edge machine learning solutions. 
+                    Empower your financial decisions with intelligent analytics and automated trading strategies.
+                </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center px-4">
+                <button class="btn btn-primary btn-md lg:btn-lg">
+                    <i class="ri-rocket-line mr-2"></i>
+                    Start Trading
+                </button>
+                <button class="btn btn-outline btn-md lg:btn-lg">
+                    <i class="ri-play-circle-line mr-2"></i>
+                    Watch Demo
+                </button>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats stats-vertical sm:stats-horizontal shadow mt-8 lg:mt-12 bg-base-100 w-full max-w-none sm:max-w-fit">
+                <div class="stat text-center">
+                    <div class="stat-figure text-primary">
+                        <i class="ri-user-line text-xl lg:text-2xl"></i>
+                    </div>
+                    <div class="stat-title text-sm lg:text-base">Active Users</div>
+                    <div class="stat-value text-primary text-xl lg:text-2xl">50K+</div>
+                    <div class="stat-desc text-xs lg:text-sm">Growing daily</div>
+                </div>
+                
+                <div class="stat text-center">
+                    <div class="stat-figure text-secondary">
+                        <i class="ri-money-dollar-circle-line text-xl lg:text-2xl"></i>
+                    </div>
+                    <div class="stat-title text-sm lg:text-base">Volume Traded</div>
+                    <div class="stat-value text-secondary text-xl lg:text-2xl">$2.6B</div>
+                    <div class="stat-desc text-xs lg:text-sm">Last 30 days</div>
+                </div>
+                
+                <div class="stat text-center">
+                    <div class="stat-figure text-accent">
+                        <i class="ri-brain-line text-xl lg:text-2xl"></i>
+                    </div>
+                    <div class="stat-title text-sm lg:text-base">AI Models</div>
+                    <div class="stat-value text-accent text-xl lg:text-2xl">150+</div>
+                    <div class="stat-desc text-xs lg:text-sm">Machine learning algorithms</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-12 lg:py-20 bg-base-100">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12 lg:mb-16">
+            <h2 class="text-3xl lg:text-4xl font-bold mb-4 text-base-content">Powerful Features</h2>
+            <p class="text-lg lg:text-xl text-base-content/70 max-w-2xl mx-auto px-4">
+                Discover the cutting-edge tools that make FinTera the preferred choice for financial professionals
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+            <!-- Feature 1 -->
+            <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure class="px-6 pt-6">
+                    <div class="bg-primary/10 p-3 lg:p-4 rounded-full">
+                        <i class="ri-brain-line text-2xl lg:text-3xl text-primary"></i>
+                    </div>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-primary text-lg lg:text-xl">AI-Powered Analytics</h3>
+                    <p class="text-base-content/80 text-sm lg:text-base">
+                        Advanced machine learning algorithms analyze market trends and provide actionable insights for better trading decisions.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure class="px-6 pt-6">
+                    <div class="bg-secondary/10 p-3 lg:p-4 rounded-full">
+                        <i class="ri-shield-check-line text-2xl lg:text-3xl text-secondary"></i>
+                    </div>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-secondary text-lg lg:text-xl">Risk Management</h3>
+                    <p class="text-base-content/80 text-sm lg:text-base">
+                        Comprehensive risk assessment tools help protect your investments with real-time monitoring and alerts.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure class="px-6 pt-6">
+                    <div class="bg-accent/10 p-3 lg:p-4 rounded-full">
+                        <i class="ri-speed-line text-2xl lg:text-3xl text-accent"></i>
+                    </div>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-accent text-lg lg:text-xl">Real-time Data</h3>
+                    <p class="text-base-content/80 text-sm lg:text-base">
+                        Access live market data and execute trades with lightning-fast speed using our optimized infrastructure.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure class="px-6 pt-6">
+                    <div class="bg-info/10 p-3 lg:p-4 rounded-full">
+                        <i class="ri-smartphone-line text-2xl lg:text-3xl text-info"></i>
+                    </div>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-info text-lg lg:text-xl">Mobile Trading</h3>
+                    <p class="text-base-content/80 text-sm lg:text-base">
+                        Trade on the go with our responsive mobile platform that provides full functionality anywhere.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 5 -->
+            <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure class="px-6 pt-6">
+                    <div class="bg-success/10 p-3 lg:p-4 rounded-full">
+                        <i class="ri-bar-chart-box-line text-2xl lg:text-3xl text-success"></i>
+                    </div>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-success text-lg lg:text-xl">Portfolio Analytics</h3>
+                    <p class="text-base-content/80 text-sm lg:text-base">
+                        Detailed portfolio analysis and performance tracking with customizable dashboards and reports.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 6 -->
+            <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure class="px-6 pt-6">
+                    <div class="bg-warning/10 p-3 lg:p-4 rounded-full">
+                        <i class="ri-customer-service-2-line text-2xl lg:text-3xl text-warning"></i>
+                    </div>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-warning text-lg lg:text-xl">24/7 Support</h3>
+                    <p class="text-base-content/80 text-sm lg:text-base">
+                        Round-the-clock customer support with dedicated account managers for premium users.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="py-12 lg:py-20 bg-base-200">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12 lg:mb-16">
+            <h2 class="text-3xl lg:text-4xl font-bold mb-4 text-base-content">Our Services</h2>
+            <p class="text-lg lg:text-xl text-base-content/70 max-w-2xl mx-auto px-4">
+                Comprehensive financial solutions tailored to your needs
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div class="space-y-6 lg:space-y-8">
+                <div class="flex items-start space-x-3 lg:space-x-4">
+                    <div class="bg-primary p-2 lg:p-3 rounded-lg flex-shrink-0">
+                        <i class="ri-line-chart-line text-lg lg:text-xl text-primary-content"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg lg:text-xl font-semibold mb-2 text-base-content">Algorithmic Trading</h3>
+                        <p class="text-base-content/80 text-sm lg:text-base">Automated trading strategies powered by advanced algorithms and machine learning models.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3 lg:space-x-4">
+                    <div class="bg-secondary p-2 lg:p-3 rounded-lg flex-shrink-0">
+                        <i class="ri-funds-line text-lg lg:text-xl text-secondary-content"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg lg:text-xl font-semibold mb-2 text-base-content">Investment Management</h3>
+                        <p class="text-base-content/80 text-sm lg:text-base">Professional portfolio management services with personalized investment strategies.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3 lg:space-x-4">
+                    <div class="bg-accent p-2 lg:p-3 rounded-lg flex-shrink-0">
+                        <i class="ri-pie-chart-line text-lg lg:text-xl text-accent-content"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg lg:text-xl font-semibold mb-2 text-base-content">Market Research</h3>
+                        <p class="text-base-content/80 text-sm lg:text-base">In-depth market analysis and research reports to inform your investment decisions.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mockup-browser border bg-base-100">
+                <div class="mockup-browser-toolbar">
+                    <div class="input text-sm lg:text-base">https://fintera.com/dashboard</div>
+                </div>
+                <div class="bg-base-200 flex justify-center px-4 py-12 lg:py-16">
+                    <div class="text-center">
+                        <i class="ri-dashboard-line text-4xl lg:text-6xl text-primary mb-3 lg:mb-4"></i>
+                        <h4 class="text-lg lg:text-xl font-semibold mb-2">Trading Dashboard</h4>
+                        <p class="text-base-content/70 text-sm lg:text-base">Experience our intuitive trading interface</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-12 lg:py-20 bg-primary text-primary-content">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl lg:text-4xl font-bold mb-4 lg:mb-6">Ready to Transform Your Trading?</h2>
+        <p class="text-lg lg:text-xl mb-6 lg:mb-8 opacity-90 max-w-2xl mx-auto px-4">
+            Join thousands of traders who have already revolutionized their financial strategies with FinTera's AI-powered platform.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center">
+            <button class="btn btn-accent btn-md lg:btn-lg">
+                <i class="ri-rocket-line mr-2"></i>
+                Get Started Free
+            </button>
+            <button class="btn btn-outline btn-md lg:btn-lg border-primary-content text-primary-content hover:bg-primary-content hover:text-primary">
+                <i class="ri-phone-line mr-2"></i>
+                Contact Sales
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer lg:footer-horizontal p-6 lg:p-10 bg-neutral text-neutral-content">
+    <aside class="lg:items-start">
+        <div class="flex items-center space-x-2 mb-4">
+            <i class="ri-line-chart-line text-2xl lg:text-3xl text-primary"></i>
+            <span class="text-xl lg:text-2xl font-bold">FinTera</span>
+        </div>
+        <p class="max-w-xs text-sm lg:text-base">
+            FinTera Ltd.<br/>
+            Providing reliable financial technology solutions since 2020
+        </p>
+    </aside>
+    <nav>
+        <h6 class="footer-title text-sm lg:text-base">Company</h6>
+        <a class="link link-hover text-sm lg:text-base">About us</a>
+        <a class="link link-hover text-sm lg:text-base">Contact</a>
+        <a class="link link-hover text-sm lg:text-base">Jobs</a>
+        <a class="link link-hover text-sm lg:text-base">Press kit</a>
+    </nav>
+    <nav>
+        <h6 class="footer-title text-sm lg:text-base">Legal</h6>
+        <a class="link link-hover text-sm lg:text-base">Terms of use</a>
+        <a class="link link-hover text-sm lg:text-base">Privacy policy</a>
+        <a class="link link-hover text-sm lg:text-base">Cookie policy</a>
+    </nav>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Add scroll effect to navbar
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 100) {
+            navbar.classList.add('bg-base-100/95', 'backdrop-blur');
+        } else {
+            navbar.classList.remove('bg-base-100/95', 'backdrop-blur');
+        }
+    });
+</script>
+{% endblock %} 
