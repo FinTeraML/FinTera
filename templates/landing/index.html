@@ -3,38 +3,7 @@
 {% block title %}FinTera - Financial Technology Solutions{% endblock %}
 
 {% block content %}
-<!-- Navigation -->
-<nav class="navbar bg-base-100 shadow-lg px-4 lg:px-8">
-    <div class="navbar-start">
-        <div class="dropdown">
-            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
-                <i class="ri-menu-line text-xl"></i>
-            </div>
-            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </div>
-        <a class="btn btn-ghost text-lg lg:text-xl font-bold text-primary">
-            <i class="ri-line-chart-line text-xl lg:text-2xl"></i>
-            FinTera
-        </a>
-    </div>
-    <div class="navbar-center hidden lg:flex">
-        <ul class="menu menu-horizontal px-1">
-            <li><a href="#features" class="hover:text-primary">Features</a></li>
-            <li><a href="#services" class="hover:text-primary">Services</a></li>
-            <li><a href="#about" class="hover:text-primary">About</a></li>
-            <li><a href="#contact" class="hover:text-primary">Contact</a></li>
-        </ul>
-    </div>
-    <div class="navbar-end">
-        <a class="btn btn-primary btn-xs sm:btn-sm mr-2">Sign In</a>
-        <a class="btn btn-outline btn-xs sm:btn-sm">Get Started</a>
-    </div>
-</nav>
+{% include 'components/navbar.html' %}
 
 <!-- Hero Section -->
 <section class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">

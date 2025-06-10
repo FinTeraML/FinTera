@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+for styling always use DaisyUI instead of regular tailwindCSS
