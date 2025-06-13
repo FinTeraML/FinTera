@@ -158,13 +158,213 @@
 <dialog id="edit_profile_modal" class="modal">
     <div class="modal-box">
         <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" 
+                    onclick="resetProfileForm()">✕</button>
         </form>
         <h3 class="font-bold text-lg mb-4">Edit Profile</h3>
-        <p class="py-4 text-center text-base-content/70">
-            <i class="ri-tools-line text-4xl text-warning"></i><br>
-            Profile editing functionality coming soon!
-        </p>
+        
+        <!-- Loading Spinner -->
+        <div class="htmx-indicator flex justify-center my-4">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+        
+        <form id="edit_profile_form" 
+              hx-post="{% url 'auth:edit_profile' %}"
+              hx-swap="outerHTML"
+              hx-indicator=".htmx-indicator"
+              class="space-y-4">
+            {% csrf_token %}
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">First Name</span>
+                </label>
+                <input type="text" 
+                       name="first_name" 
+                       value="{{ user.first_name }}" 
+                       class="input input-bordered w-full" 
+                       required>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Last Name</span>
+                </label>
+                <input type="text" 
+                       name="last_name" 
+                       value="{{ user.last_name }}" 
+                       class="input input-bordered w-full" 
+                       required>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Email Address</span>
+                </label>
+                <div class="flex gap-2">
+                    <input type="email" 
+                           name="email" 
+                           value="{{ user.email }}" 
+                           class="input input-bordered w-full" 
+                           required
+                           hx-on:change="
+                               const otpSection = document.getElementById('otp_section');
+                               const verifyBtn = document.getElementById('verify_otp_btn');
+                               const sendOtpBtn = document.getElementById('send_otp_btn');
+                               if(this.value !== '{{ user.email }}') {
+                                   otpSection.classList.remove('hidden');
+                                   sendOtpBtn.disabled = false;
+                                   verifyBtn.disabled = true;
+                               } else {
+                                   otpSection.classList.add('hidden');
+                                   sendOtpBtn.disabled = true;
+                                   verifyBtn.disabled = true;
+                               }">
+                    <button type="button" 
+                            id="send_otp_btn"
+                            class="btn btn-primary"
+                            disabled
+                            hx-post="{% url 'auth:send_verification_otp' %}"
+                            hx-include="[name='email']"
+                            hx-indicator=".htmx-indicator"
+                            hx-swap="none"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            hx-on::after-request="if(event.detail.successful) { this.disabled = true; document.getElementById('otp_section').classList.remove('hidden'); }">
+                        Send OTP
+                    </button>
+                </div>
+            </div>
+            
+            <div id="otp_section" class="form-control hidden">
+                <label class="label">
+                    <span class="label-text">OTP Code</span>
+                </label>
+                <div class="flex gap-2">
+                    <input type="text" 
+                           name="otp_code" 
+                           class="input input-bordered w-full" 
+                           maxlength="6" 
+                           pattern="\d{6}"
+                           hx-on:input="
+                               const verifyBtn = document.getElementById('verify_otp_btn');
+                               verifyBtn.disabled = this.value.length !== 6;">
+                    <button type="button" 
+                            id="verify_otp_btn"
+                            class="btn btn-primary"
+                            disabled
+                            hx-post="{% url 'auth:verify_otp' %}"
+                            hx-include="[name='email'],[name='otp_code']"
+                            hx-indicator=".htmx-indicator"
+                            hx-swap="none"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            hx-on::after-request="if(event.detail.successful) { this.disabled = true; }">
+                        Verify
+                    </button>
+                </div>
+                <p class="text-sm text-base-content/70 mt-2">Enter the 6-digit code sent to your new email address</p>
+            </div>
+            
+            <div class="modal-action">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
     </div>
 </dialog>
+
+{% block extra_js %}
+<script>
+    // Add HTMX response handling
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.successful) {
+            if (evt.detail.xhr.status === 200) {
+                const response = JSON.parse(evt.detail.xhr.response);
+                if (response.status === 'success') {
+                    if (evt.detail.target.id === 'edit_profile_form') {
+                        // Close modal and reload page
+                        document.getElementById('edit_profile_modal').close();
+                        window.location.reload();
+                    }
+                    // Show success message
+                    const toast = document.createElement('div');
+                    toast.className = 'toast toast-top toast-end';
+                    toast.innerHTML = `
+                        <div class="alert alert-success">
+                            <span>${response.message}</span>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                } else {
+                    // Show error message
+                    const toast = document.createElement('div');
+                    toast.className = 'toast toast-top toast-end';
+                    toast.innerHTML = `
+                        <div class="alert alert-error">
+                            <span>${response.message}</span>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                    
+                    // If there are form errors, show them
+                    if (response.errors) {
+                        Object.entries(response.errors).forEach(([field, errors]) => {
+                            const input = document.querySelector(`[name="${field}"]`);
+                            if (input) {
+                                input.classList.add('input-error');
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'text-error text-sm mt-1';
+                                errorDiv.textContent = errors.join(', ');
+                                input.parentNode.appendChild(errorDiv);
+                            }
+                        });
+                    }
+                }
+            }
+        } else {
+            // Show generic error message
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-top toast-end';
+            toast.innerHTML = `
+                <div class="alert alert-error">
+                    <span>An error occurred while processing your request</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    });
+
+    // Function to reset the profile form
+    function resetProfileForm() {
+        const form = document.getElementById('edit_profile_form');
+        const otpSection = document.getElementById('otp_section');
+        const sendOtpBtn = document.getElementById('send_otp_btn');
+        const verifyOtpBtn = document.getElementById('verify_otp_btn');
+        
+        // Reset form fields to original values
+        form.querySelector('[name="first_name"]').value = '{{ user.first_name }}';
+        form.querySelector('[name="last_name"]').value = '{{ user.last_name }}';
+        form.querySelector('[name="email"]').value = '{{ user.email }}';
+        form.querySelector('[name="otp_code"]').value = '';
+        
+        // Reset button states
+        sendOtpBtn.disabled = true;
+        verifyOtpBtn.disabled = true;
+        
+        // Hide OTP section
+        otpSection.classList.add('hidden');
+        
+        // Remove any error states
+        form.querySelectorAll('.input-error').forEach(input => {
+            input.classList.remove('input-error');
+        });
+        form.querySelectorAll('.text-error').forEach(error => {
+            error.remove();
+        });
+    }
+
+    // Add event listener for modal close
+    document.getElementById('edit_profile_modal').addEventListener('close', resetProfileForm);
+</script>
+{% endblock %}
 {% endblock %} 

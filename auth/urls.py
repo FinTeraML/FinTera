@@ -23,4 +23,7 @@ urlpatterns = [
     
     # Profile
     path('profile/', views.profile_view, name='profile'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('profile/send-otp/', views.send_verification_otp, name='send_verification_otp'),
+    path('profile/verify-otp/', views.verify_otp_view, name='verify_otp'),
 ] 

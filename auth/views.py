@@ -12,8 +12,10 @@ from django.views.generic import CreateView
 from django.contrib.auth.models import User
 from .forms import (
     CustomUserCreationForm, CustomAuthenticationForm, CustomPasswordResetForm,
-    CustomSetPasswordForm, CustomPasswordChangeForm
+    CustomSetPasswordForm, CustomPasswordChangeForm, EditProfileForm
 )
+from django.http import JsonResponse
+from .utils import generate_otp, send_otp_email, store_otp, verify_otp
 
 
 class RegisterView(CreateView):
@@ -38,6 +40,12 @@ class CustomLoginView(LoginView):
     form_class = CustomAuthenticationForm
     template_name = 'auth/login.html'
     redirect_authenticated_user = True
+
+    def get(self, request, *args, **kwargs):
+        # Clear any existing messages when loading the login page
+        # This prevents logout messages from showing on the login form
+        messages.get_messages(request)
+        return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
         messages.success(self.request, f'Welcome back, {form.get_user().first_name or form.get_user().username}!')
@@ -103,5 +111,77 @@ class CustomPasswordChangeDoneView(PasswordChangeDoneView):
 
 @login_required
 def profile_view(request):
-    """Simple profile view to display user information"""
+    """Profile view to display user information"""
     return render(request, 'auth/profile.html', {'user': request.user})
+
+@login_required
+def edit_profile(request):
+    """Handle profile editing with email verification"""
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, instance=request.user)
+        
+        if form.is_valid():
+            # Check if email is being changed
+            if form.cleaned_data['email'] != request.user.email:
+                # Verify OTP if provided
+                if not verify_otp(form.cleaned_data['email'], form.cleaned_data.get('otp_code')):
+                    messages.error(request, 'Invalid or expired OTP. Please request a new one.')
+                    return JsonResponse({'status': 'error', 'message': 'Invalid OTP'})
+            
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+@login_required
+def send_verification_otp(request):
+    """Send OTP for email verification"""
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        if not email:
+            return JsonResponse({'status': 'error', 'message': 'Email is required'})
+        
+        if email == request.user.email:
+            return JsonResponse({'status': 'error', 'message': 'This is your current email address'})
+        
+        # Generate and send OTP
+        otp = generate_otp()
+        store_otp(email, otp)
+        send_otp_email(email, otp)
+        
+        return JsonResponse({'status': 'success', 'message': 'OTP sent successfully'})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+@login_required
+def verify_otp_view(request):
+    """Verify OTP for email change"""
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        otp = request.POST.get('otp_code')
+        
+        if not email or not otp:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Email and OTP are required'
+            })
+        
+        if verify_otp(email, otp):
+            return JsonResponse({
+                'status': 'success',
+                'message': 'OTP verified successfully'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid or expired OTP'
+            })
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
