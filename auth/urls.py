@@ -6,6 +6,7 @@ app_name = 'auth'
 urlpatterns = [
     # Registration
     path('register/', views.RegisterView.as_view(), name='register'),
+    path('verify-email/<str:token>/', views.EmailVerificationView.as_view(), name='verify_email'),
     
     # Login/Logout
     path('login/', views.CustomLoginView.as_view(), name='login'),

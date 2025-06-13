@@ -135,6 +135,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For developm
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'your-email@gmail.com'
 # EMAIL_HOST_PASSWORD = 'your-app-password'
+DEFAULT_FROM_EMAIL = 'noreply@fintera.com'  # Change this in production
 
 # Login/Logout redirect URLs
 LOGIN_REDIRECT_URL = '/'

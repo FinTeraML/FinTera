@@ -1,0 +1,17 @@
+{% autoescape off %}
+Hello {{ user.get_full_name|default:user.username }},
+
+Thank you for registering with FinTera! Please verify your email address by clicking the link below:
+
+{{ protocol }}://{{ domain }}{% url 'auth:verify_email' token=token %}
+
+This link will expire in 24 hours for security reasons.
+
+If you didn't create an account with FinTera, please ignore this email.
+
+Best regards,
+The FinTera Team
+
+---
+This is an automated message. Please do not reply to this email.
+{% endautoescape %} 

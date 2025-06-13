@@ -8,14 +8,21 @@ from django.contrib.auth.views import (
 )
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView
+from django.views.generic import CreateView, View
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.crypto import get_random_string
 from .forms import (
     CustomUserCreationForm, CustomAuthenticationForm, CustomPasswordResetForm,
     CustomSetPasswordForm, CustomPasswordChangeForm, EditProfileForm
 )
 from django.http import JsonResponse
 from .utils import generate_otp, send_otp_email, store_otp, verify_otp
+from .models import EmailVerification
 
 
 class RegisterView(CreateView):
@@ -26,8 +33,37 @@ class RegisterView(CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        username = form.cleaned_data.get('username')
-        messages.success(self.request, f'Account created successfully for {username}! You can now log in.')
+        user = form.save()
+        
+        # Create email verification
+        token = get_random_string(64)
+        verification = EmailVerification.objects.create(
+            user=user,
+            token=token
+        )
+        
+        # Send verification email
+        current_site = get_current_site(self.request)
+        subject = 'Verify your FinTera account'
+        message = render_to_string('auth/email_verification.html', {
+            'user': user,
+            'domain': current_site.domain,
+            'protocol': 'https' if self.request.is_secure() else 'http',
+            'token': token,
+        })
+        
+        send_mail(
+            subject,
+            message,
+            None,  # Use DEFAULT_FROM_EMAIL from settings
+            [user.email],
+            fail_silently=False,
+        )
+        
+        messages.success(
+            self.request,
+            'Account created successfully! Please check your email to verify your account.'
+        )
         return response
 
     def dispatch(self, request, *args, **kwargs):
@@ -36,19 +72,57 @@ class RegisterView(CreateView):
         return super().dispatch(request, *args, **kwargs)
 
 
+class EmailVerificationView(View):
+    def get(self, request, token):
+        try:
+            verification = EmailVerification.objects.get(token=token)
+            
+            if verification.is_expired():
+                messages.error(request, 'Verification link has expired. Please request a new one.')
+                return redirect('auth:login')
+            
+            if verification.is_verified:
+                messages.info(request, 'Email already verified. You can now log in.')
+                return redirect('auth:login')
+            
+            # Mark email as verified
+            verification.is_verified = True
+            verification.save()
+            
+            messages.success(request, 'Email verified successfully! You can now log in.')
+            return redirect('auth:login')
+            
+        except EmailVerification.DoesNotExist:
+            messages.error(request, 'Invalid verification link.')
+            return redirect('auth:login')
+
+
 class CustomLoginView(LoginView):
     form_class = CustomAuthenticationForm
     template_name = 'auth/login.html'
     redirect_authenticated_user = True
 
     def get(self, request, *args, **kwargs):
-        # Clear any existing messages when loading the login page
-        # This prevents logout messages from showing on the login form
         messages.get_messages(request)
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        messages.success(self.request, f'Welcome back, {form.get_user().first_name or form.get_user().username}!')
+        user = form.get_user()
+        
+        # Check if email is verified
+        try:
+            verification = EmailVerification.objects.get(user=user)
+            if not verification.is_verified:
+                messages.error(
+                    self.request,
+                    'Please verify your email address before logging in. Check your email for the verification link.'
+                )
+                return self.form_invalid(form)
+        except EmailVerification.DoesNotExist:
+            # For backward compatibility with existing users
+            pass
+        
+        messages.success(self.request, f'Welcome back, {user.first_name or user.username}!')
         return super().form_valid(form)
 
     def form_invalid(self, form):
