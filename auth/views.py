@@ -31,6 +31,10 @@ class RegisterView(CreateView):
     template_name = 'auth/register.html'
     success_url = reverse_lazy('auth:login')
 
+    def get(self, request, *args, **kwargs):
+        messages.get_messages(request).used = True  # Clear existing messages
+        return super().get(request, *args, **kwargs)
+
     def form_valid(self, form):
         response = super().form_valid(form)
         user = form.save()
@@ -103,7 +107,7 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
     def get(self, request, *args, **kwargs):
-        messages.get_messages(request)
+        messages.get_messages(request).used = True  # Clear existing messages
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -134,8 +138,6 @@ class CustomLogoutView(LogoutView):
     template_name = 'auth/logout.html'
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            messages.success(request, 'You have been logged out successfully.')
         return super().dispatch(request, *args, **kwargs)
 
 
