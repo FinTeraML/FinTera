@@ -49,7 +49,7 @@ class RegisterView(CreateView):
         # Send verification email
         current_site = get_current_site(self.request)
         subject = 'Verify your FinTera account'
-        message = render_to_string('auth/email_verification.html', {
+        message = render_to_string('auth/email/email_verification.html', {
             'user': user,
             'domain': current_site.domain,
             'protocol': 'https' if self.request.is_secure() else 'http',
@@ -144,8 +144,8 @@ class CustomLogoutView(LogoutView):
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
     template_name = 'auth/password_reset.html'
-    email_template_name = 'auth/password_reset_email.html'
-    subject_template_name = 'auth/password_reset_subject.txt'
+    email_template_name = 'auth/email/password_reset_email.html'
+    subject_template_name = 'auth/email/password_reset_subject.txt'
     success_url = reverse_lazy('auth:password_reset_done')
 
     def form_valid(self, form):
