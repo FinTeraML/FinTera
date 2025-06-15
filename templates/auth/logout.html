@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Logged Out - FinTera{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center p-4">
+    <div class="card w-full max-w-md bg-base-100 shadow-xl">
+        <div class="card-body text-center">
+            <div class="mb-6">
+                <i class="ri-logout-circle-line text-6xl text-success mb-4"></i>
+                <h2 class="card-title text-3xl font-bold justify-center mb-2">Logged Out</h2>
+                <p class="text-base-content/70">You have been successfully logged out</p>
+            </div>
+
+            <!-- Display messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mb-4">
+                        <i class="ri-information-line"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="space-y-3">
+                <a href="{% url 'auth:login' %}" class="btn btn-primary w-full">
+                    <i class="ri-login-circle-line mr-2"></i>
+                    Sign In Again
+                </a>
+                
+                <a href="/" class="btn btn-outline w-full">
+                    <i class="ri-home-line mr-2"></i>
+                    Go Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

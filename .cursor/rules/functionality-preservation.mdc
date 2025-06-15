@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+do not mess with previous functionality, only tell how to intergrate newly added functionality with older ones
