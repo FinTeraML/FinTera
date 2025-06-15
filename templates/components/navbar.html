@@ -11,8 +11,16 @@
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
                 {% if user.is_authenticated %}
+                    <li><a href="{% url 'analytics:main_panel' %}">Analytics Panel</a></li>
                     <li><a href="{% url 'auth:profile' %}">Profile</a></li>
-                    <li><a href="{% url 'auth:logout' %}">Sign Out</a></li>
+                    <li>
+                        <form method="post" action="{% url 'auth:logout' %}" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full text-left p-0 bg-transparent border-none hover:bg-base-200 rounded-lg">
+                                Sign Out
+                            </button>
+                        </form>
+                    </li>
                 {% endif %}
             </ul>
         </div>
@@ -27,6 +35,9 @@
             <li><a href="#services" class="hover:text-primary">Services</a></li>
             <li><a href="#about" class="hover:text-primary">About</a></li>
             <li><a href="#contact" class="hover:text-primary">Contact</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'analytics:main_panel' %}" class="hover:text-primary">Analytics Panel</a></li>
+            {% endif %}
         </ul>
     </div>
     <div class="navbar-end">
@@ -54,7 +65,7 @@
                     <li><form method="post" action="{% url 'auth:logout' %}" class="w-full">
                         {% csrf_token %}
                         <button type="submit" class="w-full text-left p-0 bg-transparent border-none hover:bg-base-200 rounded-lg px-4 py-2">
-                            Sign Out
+                            <i class="ri-logout-box-r-line mr-2"></i>Sign Out
                         </button>
                     </form></li>
                 </ul>

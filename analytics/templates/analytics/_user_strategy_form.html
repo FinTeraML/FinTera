@@ -1,0 +1,75 @@
+{% load widget_tweaks %}
+
+<h2 class="card-title">Create New Strategy</h2>
+
+{% if form_error_message %}
+    <div role="alert" class="alert alert-error my-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>{{ form_error_message }}</span>
+    </div>
+{% endif %}
+
+<form hx-post="{% url 'analytics:main_panel' %}" hx-target="#user-strategies-list" hx-swap="outerHTML" hx-indicator="#strategy-loading-indicator" hx-on::after-request="if(event.detail.successful) this.reset();">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="create_strategy">
+
+    {% for field in strategy_form %}
+        <div class="form-control mb-3">
+            <label class="label" for="{{ field.id_for_label }}">
+                <span class="label-text">{{ field.label }}</span>
+            </label>
+
+            {% if field.name == 'parameters' or field.name == 'description' %}
+                 {{ field|add_class:"textarea textarea-bordered w-full"|attr:"rows:3" }}
+            {% else %}
+                 {{ field|add_class:"input input-bordered w-full" }}
+            {% endif %}
+
+            {% if field.help_text %}
+                <div class="label">
+                    <span class="label-text-alt">{{ field.help_text }}</span>
+                </div>
+            {% endif %}
+            {% for error in field.errors %}
+                <div class="label">
+                    <span class="label-text-alt text-error">{{ error }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    {% if strategy_form.non_field_errors %}
+        <div class="alert alert-error mt-2">
+            <ul>
+            {% for error in strategy_form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="card-actions mt-4">
+        <button type="submit" class="btn btn-secondary">
+            Save Strategy
+            <span id="strategy-loading-indicator" class="htmx-indicator loading loading-spinner loading-sm"></span>
+        </button>
+    </div>
+</form>
+
+{# This script block is for re-rendering the form with errors if hx-target was the form itself #}
+{# However, current setup targets the list for success, and view returns form with status 400 for errors #}
+{# If we decide to target form container on error: #}
+{# hx-target="#user-strategy-form-container" hx-swap="innerHTML" for error cases #}
+
+<script>
+// Small script to potentially clear form on successful HTMX POST if hx-on is not preferred/working for some reason
+// document.addEventListener('htmx:afterRequest', function(evt) {
+//   if (evt.detail.target.id === 'user-strategies-list' && evt.detail.successful) {
+//     const form = document.querySelector('#user-strategy-form-container form');
+//     if (form) {
+//       form.reset();
+//     }
+//   }
+// });
+// Using hx-on::after-request="if(event.detail.successful) this.reset();" on the form tag is cleaner.
+</script>

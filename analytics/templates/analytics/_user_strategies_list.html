@@ -1,0 +1,131 @@
+{% if success_message %}
+    <div role="alert" class="alert alert-success mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>{{ success_message }}</span>
+    </div>
+{% endif %}
+
+{% if user_strategies %}
+    <div class="space-y-4">
+    {% for strategy in user_strategies %}
+        <div class="card bg-base-100 shadow-md">
+            <div class="card-body">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="card-title text-lg">{{ strategy.name }}</h3>
+                        {% if strategy.description %}
+                            <p class="text-sm text-base-content text-opacity-70">{{ strategy.description }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {# The stock_symbol variable should be in the parent template's context when chart is loaded #}
+                        {# This button is only useful if a stock_symbol is active #}
+                        <button
+                            class="btn btn-sm btn-outline btn-accent"
+                            hx-get="{% url 'analytics:main_panel' %}"
+                            hx-vals='{"stock_symbol": "{{ stock_symbol|default:"" }}", "strategy_id": "{{ strategy.id }}"}'
+                            hx-target="#stock-data-display"
+                            hx-swap="innerHTML"
+                            hx-indicator="#stock-loading-indicator"
+                            title="Apply this strategy to the currently displayed stock chart."
+                            {% if not stock_symbol %}disabled{% endif %}>
+                            Apply
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <p><strong class="font-semibold">Indicator:</strong> <span class="badge badge-neutral">{{ strategy.pandasta_strategy_name }}</span></p>
+                    <p><strong class="font-semibold">Parameters:</strong></p>
+                    <pre class="bg-base-300 p-2 rounded-md text-xs overflow-x-auto"><code>{{ strategy.parameters|default:"{}" }}</code></pre>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <p class="text-info">You haven't saved any strategies yet. Use the form above to create one.</p>
+{% endif %}
+
+<script>
+// This script ensures that if the stock symbol changes in the input field,
+// the 'Apply' buttons get the updated symbol.
+// It relies on the stock_symbol input having id="stock_symbol".
+// And the main container for strategies list having id="user-strategies-list".
+
+// Function to update hx-vals for strategy buttons
+function updateUserStrategyButtonVals() {
+    const stockSymbolInput = document.getElementById('stock_symbol');
+    const currentStockSymbol = stockSymbolInput ? stockSymbolInput.value : '';
+    const strategyButtons = document.querySelectorAll('#user-strategies-list button[hx-vals]');
+
+    strategyButtons.forEach(button => {
+        let vals = JSON.parse(button.getAttribute('hx-vals').replace(/'/g, '"')); // Handle single quotes if any
+        vals.stock_symbol = currentStockSymbol;
+        button.setAttribute('hx-vals', JSON.stringify(vals));
+        if (currentStockSymbol) {
+            button.removeAttribute('disabled');
+        } else {
+            button.setAttribute('disabled', 'true');
+        }
+    });
+}
+
+// Re-attach listener if #user-strategies-list is swapped by HTMX
+// (e.g. after creating a new strategy)
+const strategiesListObserver = new MutationObserver((mutationsList, observer) => {
+    for(const mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+            // Check if new nodes were added that might contain our buttons or if buttons are part of the direct target
+            const stockSymbolInput = document.getElementById('stock_symbol');
+            if (stock_symbolInput) { // Ensure input exists before adding listener
+                 stockSymbolInput.removeEventListener('input', updateUserStrategyButtonVals); // remove old one if any
+                 stockSymbolInput.addEventListener('input', updateUserStrategyButtonVals);
+            }
+            updateUserStrategyButtonVals(); // Initial update for newly loaded list
+            break;
+        }
+    }
+});
+
+const strategiesListContainer = document.getElementById('user-strategies-list');
+if (strategiesListContainer) {
+    strategiesListObserver.observe(strategiesListContainer, { childList: true, subtree: true });
+    // Initial setup
+    const stockSymbolInput = document.getElementById('stock_symbol');
+    if (stockSymbolInput) {
+        stockSymbolInput.addEventListener('input', updateUserStrategyButtonVals);
+    }
+    updateUserStrategyButtonVals(); // Call once on load
+}
+
+// If the stock data display is updated (e.g., new chart loaded),
+// we should also update the buttons because the stock_symbol context might have changed.
+const stockDataDisplayObserver = new MutationObserver((mutationsList, observer) => {
+    for(const mutation of mutationsList) {
+        if (mutation.type === 'childList') { // Check if content of #stock-data-display changed
+            // The `stock_symbol` context variable in `_user_strategies_list.html`
+            // is set by the main_panel.html's context.
+            // If a new stock is loaded, the main_panel.html isn't re-rendered by default,
+            // only _stock_data_display.html is.
+            // So, the {{ stock_symbol }} in the hx-vals might be stale if not handled.
+            // The view now includes `stock_symbol` in the context for `_stock_data_display.html`.
+            // We need to ensure the `_user_strategies_list.html` also gets this updated `stock_symbol`.
+            // The simplest is to rely on the input field `id="stock_symbol"` as the source of truth.
+            updateUserStrategyButtonVals();
+            break;
+        }
+    }
+});
+const stockDataDisplayContainer = document.getElementById('stock-data-display');
+if (stockDataDisplayContainer) {
+    stockDataDisplayObserver.observe(stockDataDisplayContainer, { childList: true, subtree: true });
+}
+
+
+// Clean up observers when elements are removed (e.g. navigating away)
+// This is more advanced and might not be strictly necessary for this scope.
+// window.addEventListener('beforeunload', () => {
+//   strategiesListObserver.disconnect();
+//   stockDataDisplayObserver.disconnect();
+// });
+</script>

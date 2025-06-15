@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Panel - FinTera{% endblock %}
+
+{% block content %}
+{% include "components/navbar.html" %}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Stock Data Analysis Section -->
+        <div>
+            <h1 class="text-3xl font-bold mb-6 text-primary">Stock Data Analysis</h1>
+            <div class="card bg-base-200 shadow-xl mb-6">
+                <div class="card-body">
+                    <h2 class="card-title">Fetch Stock Data</h2>
+                    <form hx-post="{% url 'analytics:main_panel' %}" hx-target="#stock-data-display" hx-swap="innerHTML" hx-indicator="#stock-loading-indicator">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="fetch_stock">
+                        <div class="form-control mb-4">
+                            <label class="label" for="stock_symbol">
+                                <span class="label-text">Stock Symbol (e.g., AAPL, MSFT)</span>
+                            </label>
+                            <input type="text" name="stock_symbol" id="stock_symbol" placeholder="Enter stock symbol" class="input input-bordered w-full" required>
+                        </div>
+                        <div class="card-actions">
+                            <button type="submit" class="btn btn-primary">
+                                Fetch Data
+                                <span id="stock-loading-indicator" class="htmx-indicator loading loading-spinner loading-sm"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="stock-data-display" class="mt-6">
+                <p class="text-info">Enter a stock symbol above and click "Fetch Data" to see results.</p>
+            </div>
+        </div>
+
+        <!-- Manage Strategies Section -->
+        <div>
+            <h1 class="text-3xl font-bold mb-6 text-secondary">Manage Strategies</h1>
+            <div class="card bg-base-200 shadow-xl mb-6">
+                <div class="card-body" id="user-strategy-form-container">
+                    {% include 'analytics/_user_strategy_form.html' %}
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-bold mb-4 text-secondary-focus">Your Saved Strategies</h2>
+            <div id="user-strategies-list" class="mt-6">
+                {% include 'analytics/_user_strategies_list.html' with user_strategies=user_strategies %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

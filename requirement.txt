@@ -1,1 +1,5 @@
 django
+yfinance
+pandas-ta
+plotly
+django-widget-tweaks
