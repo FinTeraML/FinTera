@@ -1,0 +1,74 @@
+<!-- Navigation Component with Authentication -->
+<nav class="navbar bg-base-100 shadow-lg px-4 lg:px-8">
+    <div class="navbar-start">
+        <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                <i class="ri-menu-line text-xl"></i>
+            </div>
+            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'auth:profile' %}">Profile</a></li>
+                    <li><a href="{% url 'auth:logout' %}">Sign Out</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        <a href="/" class="btn btn-ghost text-lg lg:text-xl font-bold text-primary">
+            <i class="ri-line-chart-line text-xl lg:text-2xl"></i>
+            FinTera
+        </a>
+    </div>
+    <div class="navbar-center hidden lg:flex">
+        <ul class="menu menu-horizontal px-1">
+            <li><a href="#features" class="hover:text-primary">Features</a></li>
+            <li><a href="#services" class="hover:text-primary">Services</a></li>
+            <li><a href="#about" class="hover:text-primary">About</a></li>
+            <li><a href="#contact" class="hover:text-primary">Contact</a></li>
+        </ul>
+    </div>
+    <div class="navbar-end">
+        {% if user.is_authenticated %}
+            <!-- User is logged in -->
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="avatar avatar-placeholder">
+                        <div class="bg-primary text-primary-content rounded-full w-10">
+                            <span class="text-sm">{{ user.first_name.0|default:user.username.0|upper }}</span>
+                        </div>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li class="menu-title">
+                        <span>
+                            {% if user.first_name %}
+                                {{ user.first_name }} {{ user.last_name }}
+                            {% else %}
+                                {{ user.username }}
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li><a href="{% url 'auth:profile' %}"><i class="ri-user-line mr-2"></i>Profile</a></li>
+                    <li><a href="{% url 'auth:password_change' %}"><i class="ri-key-2-line mr-2"></i>Change Password</a></li>
+                    <li><hr></li>
+                    <li><form method="post" action="{% url 'auth:logout' %}" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left p-0 bg-transparent border-none hover:bg-base-200 rounded-lg px-4 py-2">
+                            Sign Out
+                        </button>
+                    </form></li>
+                </ul>
+            </div>
+        {% else %}
+            <!-- User is not logged in -->
+            <a href="{% url 'auth:login' %}" class="btn btn-primary btn-xs sm:btn-sm mr-2">
+                <i class="ri-login-circle-line mr-1"></i>
+                Sign In
+            </a>
+            <a href="{% url 'auth:register' %}" class="btn btn-outline btn-xs sm:btn-sm">
+                <i class="ri-user-add-line mr-1"></i>
+                Get Started
+            </a>
+        {% endif %}
+    </div>
+</nav> 
