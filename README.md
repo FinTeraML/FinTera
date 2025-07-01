@@ -175,7 +175,7 @@ For experienced developers, here's a quick command sequence:
 git clone <repository-url> && cd FinTeraML
 python -m venv .venv && .venv\Scripts\activate  # Windows
 # source .venv/bin/activate  # macOS/Linux
-pip install -r requirement.txt
+pip install -r requirements.txt
 
 # Setup Tailwind
 cd util && npm install && cd ..

@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FinTera - Financial Technology Solutions{% endblock %}</title>
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+</head>
+<body class="bg-base-100 text-base-content h-full overflow-hidden">
+    <div class="h-screen bg-base-100 overflow-hidden">
+        <!-- Dashboard Layout -->
+        <div class="flex h-full">
+            <!-- Sidebar Component -->
+            {% include 'components/sidebar.html' %}
+            
+            <!-- Main Content -->
+            <div id="mainContent" class="flex-1 w-full lg:ml-64 h-screen bg-base-100 transition-all duration-300 flex flex-col">
+                <!-- Mobile Menu Toggle -->
+                <div class="lg:hidden p-4 bg-base-100 border-b border-base-300 flex-shrink-0 flex items-center justify-between">
+                    <h1 class="text-lg font-semibold text-base-content">FinTera</h1>
+                    <button id="mobileMenuToggle" class="btn btn-ghost btn-square">
+                        <i class="ri-menu-line text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Scrollable Content Area -->
+                <div class="flex-1 overflow-y-auto">
+                    <div class="p-6 w-full">
+                        {% block dashboard_content %}
+                        <!-- Dashboard content goes here -->
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
