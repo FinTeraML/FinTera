@@ -1,0 +1,344 @@
+<!-- Mobile Overlay -->
+<div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden hidden"></div>
+
+<!-- Sidebar Component -->
+<div id="sidebar" class="w-64 h-screen bg-base-200 shadow-lg fixed left-0 top-0 z-30 transition-all duration-300 overflow-hidden -translate-x-full lg:translate-x-0">
+    <div class="p-4 h-full flex flex-col">
+        <!-- Logo/Brand -->
+        <div class="flex items-center mb-8">
+            <div class="flex items-center">
+                <div class="bg-primary px-1 rounded-lg mr-2">
+                    <i class="ri-line-chart-line text-xl text-primary-content"></i>
+                </div>
+                <span class="text-xl font-bold text-base-content sidebar-text">FinTera</span>
+            </div>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="space-y-2 flex-1 overflow-y-auto">
+            <!-- Dashboard Link -->
+            <a href="{% url 'landing:dashboard' %}" class="flex items-center p-3 rounded-lg {% if request.resolver_match.url_name == 'dashboard' %}bg-primary text-primary-content{% else %}hover:bg-base-300 text-base-content{% endif %} transition-all duration-200 sidebar-nav-item relative" onclick="closeMobileMenuOnClick()">
+                <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-amber-400 rounded-r-md sidebar-active-indicator {% if request.resolver_match.url_name != 'dashboard' %}hidden{% endif %}"></div>
+                <i class="ri-dashboard-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+            
+            <!-- AutoML Link -->
+            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="showComingSoon('AutoML'); closeMobileMenuOnClick();">
+                <i class="ri-brain-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
+                <span class="sidebar-text">AutoML</span>
+                <span class="ml-auto badge badge-sm badge-info sidebar-text">Soon</span>
+            </a>
+            
+            <!-- Backtesting Link -->
+            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="showComingSoon('Backtesting'); closeMobileMenuOnClick();">
+                <i class="ri-line-chart-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
+                <span class="sidebar-text">Backtesting</span>
+                <span class="ml-auto badge badge-sm badge-info sidebar-text">Soon</span>
+            </a>
+            
+            <!-- Divider -->
+            <div class="divider"></div>
+            
+            <!-- Data Management -->
+            <div class="px-3 py-2">
+                <h3 class="text-sm font-semibold text-base-content/60 uppercase tracking-wide sidebar-text">Data</h3>
+            </div>
+            
+            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="showComingSoon('Datasets'); closeMobileMenuOnClick();">
+                <i class="ri-database-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
+                <span class="sidebar-text">Datasets</span>
+            </a>
+            
+            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="showComingSoon('Models'); closeMobileMenuOnClick();">
+                <i class="ri-cpu-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
+                <span class="sidebar-text">Models</span>
+            </a>
+            
+            <!-- Divider -->
+            <div class="divider"></div>
+            
+            <!-- Settings -->
+            <a href="{% url 'auth:profile' %}" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="closeMobileMenuOnClick()">
+                <i class="ri-user-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
+                <span class="sidebar-text">Profile</span>
+            </a>
+            
+            <a href="{% url 'auth:logout' %}" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="closeMobileMenuOnClick()">
+                <i class="ri-logout-box-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
+                <span class="sidebar-text">Logout</span>
+            </a>
+        </nav>
+        
+        <!-- Toggle Button (Bottom) -->
+        <div class="pt-4 border-t border-base-300 mt-4">
+            <button id="sidebarToggle" class="w-full flex items-center justify-center p-3 hover:bg-base-300 rounded-lg transition-colors hidden lg:flex">
+                <i class="ri-menu-fold-line text-lg"></i>
+                <span class="ml-2 sidebar-text">Collapse</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar JavaScript -->
+<script>
+// Global variables
+let sidebarCollapsed = false;
+let mobileMenuOpen = false;
+
+// Sidebar functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    const sidebarTexts = document.querySelectorAll('.sidebar-text');
+
+    // Desktop sidebar collapse/expand function
+    function toggleSidebar() {
+        // Only works on desktop
+        if (window.innerWidth < 1024) return;
+        
+        sidebarCollapsed = !sidebarCollapsed;
+        
+        if (sidebarCollapsed) {
+            // Collapse sidebar
+            sidebar.classList.remove('w-64');
+            sidebar.classList.add('w-16');
+            if (mainContent) {
+                mainContent.classList.remove('lg:ml-64');
+                mainContent.classList.add('lg:ml-16');
+            }
+            
+            // Hide text elements
+            sidebarTexts.forEach(text => {
+                text.style.display = 'none';
+            });
+            
+            // Change toggle icon and center it
+            sidebarToggle.innerHTML = '<i class="ri-menu-unfold-line text-lg"></i>';
+            sidebarToggle.classList.remove('justify-center');
+            sidebarToggle.classList.add('justify-center');
+            
+            // Hide dividers when collapsed
+            const dividers = sidebar.querySelectorAll('.divider');
+            dividers.forEach(divider => {
+                divider.style.display = 'none';
+            });
+            
+            // Update navigation items for collapsed state
+            const navItems = sidebar.querySelectorAll('.sidebar-nav-item');
+            navItems.forEach(item => {
+                item.classList.add('justify-center');
+                item.classList.remove('hover:translate-x-0.5');
+                
+                // Enhanced styling for active item when collapsed
+                if (item.classList.contains('bg-primary')) {
+                    item.classList.add('shadow-lg', 'border-2', 'border-white/20');
+                }
+            });
+            
+            // Update icons for collapsed state
+            const navIcons = sidebar.querySelectorAll('.sidebar-nav-icon');
+            navIcons.forEach(icon => {
+                icon.classList.remove('mr-3');
+                icon.classList.add('mr-0');
+            });
+        } else {
+            // Expand sidebar
+            sidebar.classList.remove('w-16');
+            sidebar.classList.add('w-64');
+            if (mainContent) {
+                mainContent.classList.remove('lg:ml-16');
+                mainContent.classList.add('lg:ml-64');
+            }
+            
+            // Restore navigation items for expanded state
+            const navItems = sidebar.querySelectorAll('.sidebar-nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('justify-center');
+                item.classList.add('hover:translate-x-0.5');
+                
+                // Restore original styling for active item
+                if (item.classList.contains('bg-primary')) {
+                    item.classList.remove('shadow-lg', 'border-2', 'border-white/20');
+                }
+            });
+            
+            // Restore icons for expanded state
+            const navIcons = sidebar.querySelectorAll('.sidebar-nav-icon');
+            navIcons.forEach(icon => {
+                icon.classList.remove('mr-0');
+                icon.classList.add('mr-3');
+            });
+            
+            // Show text elements
+            sidebarTexts.forEach(text => {
+                text.style.display = '';
+            });
+            
+            // Change toggle icon and restore layout
+            sidebarToggle.innerHTML = '<i class="ri-menu-fold-line text-lg"></i><span class="ml-2 sidebar-text">Collapse</span>';
+            sidebarToggle.classList.remove('justify-center');
+            
+            // Show dividers when expanded
+            const dividers = sidebar.querySelectorAll('.divider');
+            dividers.forEach(divider => {
+                divider.style.display = '';
+            });
+        }
+    }
+
+    // Mobile menu toggle function
+    function toggleMobileMenu() {
+        // Only works on mobile
+        if (window.innerWidth >= 1024) return;
+        
+        mobileMenuOpen = !mobileMenuOpen;
+        
+        if (mobileMenuOpen) {
+            // Show sidebar and overlay - always in expanded state
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            
+            // Ensure mobile sidebar is always expanded
+            sidebar.classList.remove('w-16');
+            sidebar.classList.add('w-64');
+            
+            // Show all text elements for mobile
+            sidebarTexts.forEach(text => {
+                text.style.display = '';
+            });
+            
+            // Show dividers for mobile
+            const dividers = sidebar.querySelectorAll('.divider');
+            dividers.forEach(divider => {
+                divider.style.display = '';
+            });
+            
+            mobileOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Hide sidebar and overlay
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+            mobileOverlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Function to close mobile menu when clicking sidebar links
+    window.closeMobileMenuOnClick = function() {
+        if (window.innerWidth < 1024 && mobileMenuOpen) {
+            toggleMobileMenu();
+        }
+    };
+
+    // Event listeners
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+    }
+
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+    }
+
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener('click', function() {
+            if (mobileMenuOpen) {
+                toggleMobileMenu();
+            }
+        });
+    }
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 1024) {
+            // Desktop mode
+            sidebar.classList.remove('-translate-x-full', 'translate-x-0');
+            mobileOverlay.classList.add('hidden');
+            document.body.style.overflow = '';
+            mobileMenuOpen = false;
+            
+            // Reset desktop collapse state if needed
+            if (!sidebarCollapsed) {
+                sidebar.classList.add('w-64');
+                sidebar.classList.remove('w-16');
+            }
+        } else {
+            // Mobile mode
+            if (!mobileMenuOpen) {
+                sidebar.classList.remove('translate-x-0');
+                sidebar.classList.add('-translate-x-full');
+            }
+            mobileOverlay.classList.add('hidden');
+        }
+    });
+    
+    // Initialize proper state based on screen size
+    function initializeSidebar() {
+        if (window.innerWidth < 1024) {
+            // Mobile: hide sidebar but ensure it's ready in expanded state
+            sidebar.classList.add('-translate-x-full');
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.remove('w-16');
+            sidebar.classList.add('w-64');
+            
+            // Ensure all text is visible for mobile
+            sidebarTexts.forEach(text => {
+                text.style.display = '';
+            });
+            
+            // Show dividers for mobile
+            const dividers = sidebar.querySelectorAll('.divider');
+            dividers.forEach(divider => {
+                divider.style.display = '';
+            });
+            
+            mobileOverlay.classList.add('hidden');
+        } else {
+            // Desktop: show sidebar
+            sidebar.classList.remove('-translate-x-full', 'translate-x-0');
+        }
+    }
+    
+    // Initialize on load
+    initializeSidebar();
+});
+
+// Coming Soon functionality (if not already defined)
+if (typeof showComingSoon === 'undefined') {
+    function showComingSoon(feature) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('coming-soon-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'coming-soon-modal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg">Coming Soon!</h3>
+                    <p class="py-4" id="coming-soon-text">This feature will be available soon.</p>
+                    <div class="modal-action">
+                        <button class="btn" onclick="document.getElementById('coming-soon-modal').style.display='none'">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Add click outside to close
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        }
+        
+        document.getElementById('coming-soon-text').textContent = `${feature} functionality will be implemented soon. Stay tuned!`;
+        modal.style.display = 'flex';
+    }
+}
+</script>
+
+ 

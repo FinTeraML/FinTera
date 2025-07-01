@@ -5,4 +5,5 @@ app_name = 'landing'
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('dashboard/', views.dashboard, name='dashboard'),
 ] 

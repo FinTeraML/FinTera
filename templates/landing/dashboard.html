@@ -1,0 +1,174 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Dashboard - FinTera{% endblock %}
+
+{% block dashboard_content %}
+<!-- Header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-base-content">Dashboard</h1>
+    <p class="text-base-content/70 mt-2">Welcome back! Here's an overview of your FinTera activities.</p>
+</div>
+            
+            <!-- Quick Stats -->
+            <div class="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Total Models -->
+                <div class="card bg-gradient-to-br from-primary to-primary-focus text-primary-content shadow-lg stat-card">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-medium opacity-90">Total Models</h3>
+                                <p class="text-3xl font-bold">{{ total_models }}</p>
+                                <p class="text-sm opacity-75">{{ active_models }} active</p>
+                            </div>
+                            <i class="ri-cpu-line text-4xl opacity-20"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Total Datasets -->
+                <div class="card bg-gradient-to-br from-secondary to-secondary-focus text-secondary-content shadow-lg stat-card">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-medium opacity-90">Total Datasets</h3>
+                                <p class="text-3xl font-bold">{{ total_datasets }}</p>
+                                <p class="text-sm opacity-75">{{ recent_datasets }} recent</p>
+                            </div>
+                            <i class="ri-database-line text-4xl opacity-20"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Total Backtests -->
+                <div class="card bg-gradient-to-br from-accent to-accent-focus text-accent-content shadow-lg stat-card">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-medium opacity-90">Total Backtests</h3>
+                                <p class="text-3xl font-bold">{{ total_backtests }}</p>
+                                <p class="text-sm opacity-75">{{ successful_backtests }} successful</p>
+                            </div>
+                            <i class="ri-line-chart-line text-4xl opacity-20"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Average Return -->
+                <div class="card bg-gradient-to-br from-success to-success-focus text-success-content shadow-lg stat-card">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-medium opacity-90">Avg Return</h3>
+                                <p class="text-3xl font-bold">{{ avg_return }}%</p>
+                                <p class="text-sm opacity-75">Last 30 days</p>
+                            </div>
+                            <i class="ri-trophy-line text-4xl opacity-20"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Recent Activity -->
+                <div class="card bg-base-200 shadow-lg">
+                    <div class="card-header p-6 pb-0">
+                        <h2 class="card-title text-xl">Recent Activity</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="space-y-4">
+                            <div class="flex items-center p-3 bg-base-100 rounded-lg">
+                                <div class="bg-primary p-2 rounded-lg mr-3">
+                                    <i class="ri-cpu-line text-primary-content"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium">{{ models_created_this_month }} models created</p>
+                                    <p class="text-sm text-base-content/70">This month</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center p-3 bg-base-100 rounded-lg">
+                                <div class="bg-secondary p-2 rounded-lg mr-3">
+                                    <i class="ri-database-line text-secondary-content"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium">{{ datasets_uploaded_this_week }} datasets uploaded</p>
+                                    <p class="text-sm text-base-content/70">This week</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center p-3 bg-base-100 rounded-lg">
+                                <div class="bg-accent p-2 rounded-lg mr-3">
+                                    <i class="ri-line-chart-line text-accent-content"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium">{{ active_backtests }} backtests running</p>
+                                    <p class="text-sm text-base-content/70">Currently active</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div class="card bg-base-200 shadow-lg">
+                    <div class="card-header p-6 pb-0">
+                        <h2 class="card-title text-xl">Performance Metrics</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="space-y-6">
+                            <!-- Best Model Accuracy -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-medium">Best Model Accuracy</span>
+                                    <span class="text-sm font-bold">{{ best_model_accuracy }}%</span>
+                                </div>
+                                <progress class="progress progress-primary w-full" value="{{ best_model_accuracy }}" max="100"></progress>
+                            </div>
+                            
+                            <!-- Success Rate -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-medium">Backtest Success Rate</span>
+                                    <span class="text-sm font-bold">{{ successful_backtests|floatformat:0 }}/{{ total_backtests }}</span>
+                                </div>
+                                <progress class="progress progress-success w-full" value="{{ successful_backtests }}" max="{{ total_backtests }}"></progress>
+                            </div>
+                            
+                            <!-- Model Utilization -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-medium">Active Model Ratio</span>
+                                    <span class="text-sm font-bold">{{ active_models }}/{{ total_models }}</span>
+                                </div>
+                                <progress class="progress progress-info w-full" value="{{ active_models }}" max="{{ total_models }}"></progress>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card bg-base-200 shadow-lg">
+                <div class="card-header p-6 pb-0">
+                    <h2 class="card-title text-xl">Quick Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button class="btn btn-primary btn-lg quick-action-btn" onclick="showComingSoon('Create New Model')">
+                            <i class="ri-add-line mr-2"></i>
+                            Create New Model
+                        </button>
+                        
+                        <button class="btn btn-secondary btn-lg quick-action-btn" onclick="showComingSoon('Upload Dataset')">
+                            <i class="ri-upload-line mr-2"></i>
+                            Upload Dataset
+                        </button>
+                        
+                        <button class="btn btn-accent btn-lg quick-action-btn" onclick="showComingSoon('Run Backtest')">
+                            <i class="ri-play-line mr-2"></i>
+                            Run Backtest
+                        </button>
+                    </div>
+                </div>
+{% endblock %} 
