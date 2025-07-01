@@ -127,24 +127,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 divider.style.display = 'none';
             });
             
-            // Update navigation items for collapsed state
-            const navItems = sidebar.querySelectorAll('.sidebar-nav-item');
-            navItems.forEach(item => {
-                item.classList.add('justify-center');
-                item.classList.remove('hover:translate-x-0.5');
-                
-                // Enhanced styling for active item when collapsed
-                if (item.classList.contains('bg-primary')) {
-                    item.classList.add('shadow-lg', 'border-2', 'border-white/20');
-                }
-            });
+            // Update navigation items for collapsed state (desktop only)
+            if (window.innerWidth >= 1024) {
+                const navItems = sidebar.querySelectorAll('.sidebar-nav-item');
+                navItems.forEach(item => {
+                    item.classList.add('justify-center');
+                    item.classList.remove('hover:translate-x-0.5');
+                    
+                    // Enhanced styling for active item when collapsed
+                    if (item.classList.contains('bg-primary')) {
+                        item.classList.add('shadow-lg', 'border-2', 'border-white/20');
+                    }
+                });
+            }
             
-            // Update icons for collapsed state
-            const navIcons = sidebar.querySelectorAll('.sidebar-nav-icon');
-            navIcons.forEach(icon => {
-                icon.classList.remove('mr-3');
-                icon.classList.add('mr-0');
-            });
+            // Update icons for collapsed state (desktop only)
+            if (window.innerWidth >= 1024) {
+                const navIcons = sidebar.querySelectorAll('.sidebar-nav-icon');
+                navIcons.forEach(icon => {
+                    icon.classList.remove('mr-3');
+                    icon.classList.add('mr-0');
+                });
+            }
         } else {
             // Expand sidebar
             sidebar.classList.remove('w-16');
@@ -154,24 +158,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 mainContent.classList.add('lg:ml-64');
             }
             
-            // Restore navigation items for expanded state
-            const navItems = sidebar.querySelectorAll('.sidebar-nav-item');
-            navItems.forEach(item => {
-                item.classList.remove('justify-center');
-                item.classList.add('hover:translate-x-0.5');
-                
-                // Restore original styling for active item
-                if (item.classList.contains('bg-primary')) {
-                    item.classList.remove('shadow-lg', 'border-2', 'border-white/20');
-                }
-            });
+            // Restore navigation items for expanded state (desktop only)
+            if (window.innerWidth >= 1024) {
+                const navItems = sidebar.querySelectorAll('.sidebar-nav-item');
+                navItems.forEach(item => {
+                    item.classList.remove('justify-center');
+                    item.classList.add('hover:translate-x-0.5');
+                    
+                    // Restore original styling for active item
+                    if (item.classList.contains('bg-primary')) {
+                        item.classList.remove('shadow-lg', 'border-2', 'border-white/20');
+                    }
+                });
+            }
             
-            // Restore icons for expanded state
-            const navIcons = sidebar.querySelectorAll('.sidebar-nav-icon');
-            navIcons.forEach(icon => {
-                icon.classList.remove('mr-0');
-                icon.classList.add('mr-3');
-            });
+            // Restore icons for expanded state (desktop only)
+            if (window.innerWidth >= 1024) {
+                const navIcons = sidebar.querySelectorAll('.sidebar-nav-icon');
+                navIcons.forEach(icon => {
+                    icon.classList.remove('mr-0');
+                    icon.classList.add('mr-3');
+                });
+            }
             
             // Show text elements
             sidebarTexts.forEach(text => {
@@ -294,6 +302,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const dividers = sidebar.querySelectorAll('.divider');
             dividers.forEach(divider => {
                 divider.style.display = '';
+            });
+            
+            // Ensure mobile navigation items are left-aligned
+            const navItems = sidebar.querySelectorAll('.sidebar-nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('justify-center');
+                item.classList.add('hover:translate-x-0.5');
+            });
+            
+            // Ensure mobile icons have proper spacing
+            const navIcons = sidebar.querySelectorAll('.sidebar-nav-icon');
+            navIcons.forEach(icon => {
+                icon.classList.remove('mr-0');
+                icon.classList.add('mr-3');
             });
             
             mobileOverlay.classList.add('hidden');
