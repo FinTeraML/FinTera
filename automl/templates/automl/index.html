@@ -1,0 +1,263 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block dashboard_content %}
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4">📈 Hisse Fiyat Tahmin ve Teknik Analiz Platformu</h1>
+
+  <!-- İstatistik Kutuları -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="card bg-gradient-to-br from-primary to-primary-focus text-primary-content shadow-lg">
+      <div class="card-body">
+        <h3 class="text-sm font-medium opacity-90">Toplam Tahmin</h3>
+        <p class="text-3xl font-bold">{{ toplam_tahmin }}</p>
+      </div>
+    </div>
+    <div class="card bg-gradient-to-br from-accent to-accent-focus text-accent-content shadow-lg">
+      <div class="card-body">
+        <h3 class="text-sm font-medium opacity-90">Toplam Model</h3>
+        <p class="text-3xl font-bold">{{ toplam_model }}</p>
+      </div>
+    </div>
+    <div class="card bg-gradient-to-br from-secondary to-secondary-focus text-secondary-content shadow-lg">
+      <div class="card-body">
+        <h3 class="text-sm font-medium opacity-90">Aktif Model</h3>
+        <p class="text-3xl font-bold">{{ aktif_model }}</p>
+      </div>
+    </div>
+    <div class="card bg-gradient-to-br from-info to-info-focus text-info-content shadow-lg">
+      <div class="card-body">
+        <h3 class="text-sm font-medium opacity-90">En İyi Accuracy</h3>
+        <p class="text-3xl font-bold">{{ best_accuracy }}</p>
+        <p class="text-xs opacity-90">{{ best_model_name }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modeller ve Tahminler Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Son Modeller -->
+    <div class="card bg-base-200 shadow-lg">
+      <div class="card-header p-6 pb-0">
+        <h2 class="card-title text-xl">📊 Son Oluşturulan Modeller</h2>
+      </div>
+      <div class="card-body">
+        {% if son_modeller %}
+          <div class="overflow-x-auto">
+            <table class="table w-full">
+              <thead>
+                <tr>
+                  <th>Model Adı</th>
+                  <th>Durum</th>
+                  <th>Oluşturulma</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for model in son_modeller %}
+                <tr>
+                  <td>
+                    <div class="font-semibold">{{ model.name }}</div>
+                  </td>
+                  <td>
+                    {% if model.is_active %}
+                      <span class="badge badge-success">Aktif</span>
+                    {% else %}
+                      <span class="badge badge-warning">Pasif</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ model.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-8">
+            <div class="text-4xl mb-4">🤖</div>
+            <p class="text-gray-600">Henüz model oluşturulmadı</p>
+            <p class="text-sm text-gray-500">İlk tahmininizi yaparak model oluşturun</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Son Tahminler -->
+    <div class="card bg-base-200 shadow-lg">
+      <div class="card-header p-6 pb-0">
+        <h2 class="card-title text-xl">📈 Son Yapılan Tahminler</h2>
+      </div>
+      <div class="card-body">
+        {% if son_tahminler %}
+          <div class="overflow-x-auto">
+            <table class="table w-full">
+              <thead>
+                <tr>
+                  <th>Hisse</th>
+                  <th>Model</th>
+                  <th>RMSE</th>
+                  <th>MAE</th>
+                  <th>Tarih</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in son_tahminler %}
+                <tr>
+                  <td><strong>{{ t.ticker }}</strong></td>
+                  <td>{{ t.model }}</td>
+                  <td>{{ t.rmse|floatformat:4 }}</td>
+                  <td>{{ t.mae|floatformat:4 }}</td>
+                  <td>{{ t.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-8">
+            <div class="text-4xl mb-4">📊</div>
+            <p class="text-gray-600">Henüz tahmin yapılmadı</p>
+            <p class="text-sm text-gray-500">İlk tahmininizi yaparak başlayın</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form id="forecast-form" method="POST" hx-post="{% url 'stock_forecast' %}" hx-target="#forecast-result" hx-swap="innerHTML">
+    {% csrf_token %}
+    <div class="form-control mb-4">
+      <label class="label">
+        <span class="label-text">Tahmin Tipi</span>
+      </label>
+      <div class="flex gap-4">
+        <label class="cursor-pointer">
+          <input type="radio" name="prediction_type" value="single" class="radio radio-primary" checked onchange="togglePortfolioFields()" />
+          <span class="ml-2">Tek Hisse</span>
+        </label>
+        <label class="cursor-pointer">
+          <input type="radio" name="prediction_type" value="portfolio" class="radio radio-primary" onchange="togglePortfolioFields()" />
+          <span class="ml-2">Portföy</span>
+        </label>
+      </div>
+    </div>
+    <div id="single-stock-fields">
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">Hisse Senedi (Ticker)</span>
+        </label>
+        <select name="ticker" class="select select-bordered w-full" required>
+          {% for t in tickers %}
+            <option value="{{ t }}">{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div id="portfolio-fields" style="display:none;">
+      <label class="label">
+        <span class="label-text">Portföy Hisseleri ve Ağırlıkları</span>
+      </label>
+      <div id="portfolio-list"></div>
+      <button type="button" class="btn btn-outline btn-sm mt-2" onclick="addPortfolioRow()">+ Hisse Ekle</button>
+      <div class="text-xs mt-1" id="portfolio-warning"></div>
+    </div>
+    <div class="mb-4">
+      <label class="block font-semibold">Model Seçimi</label>
+      <select name="model" class="select select-bordered w-full">
+        <option value="LinearRegression">Linear Regression</option>
+        <option value="RandomForest">Random Forest</option>
+        <option value="LightGBM">LightGBM</option>
+        <option value="XGBoost">XGBoost</option>
+        <option value="LSTM">LSTM (Deep Learning)</option>
+      </select>
+    </div>
+    <div class="mb-4">
+      <label class="block font-semibold">Teknik Göstergeler</label>
+      <div class="grid grid-cols-2 gap-2">
+        <label class="label cursor-pointer">
+          <span class="label-text">SMA</span>
+          <input type="checkbox" name="gosterge" value="SMA" class="checkbox checkbox-primary" />
+        </label>
+        <label class="label cursor-pointer">
+          <span class="label-text">EMA</span>
+          <input type="checkbox" name="gosterge" value="EMA" class="checkbox checkbox-primary" />
+        </label>
+        <label class="label cursor-pointer">
+          <span class="label-text">RSI</span>
+          <input type="checkbox" name="gosterge" value="RSI" class="checkbox checkbox-primary" />
+        </label>
+        <label class="label cursor-pointer">
+          <span class="label-text">MACD</span>
+          <input type="checkbox" name="gosterge" value="MACD" class="checkbox checkbox-primary" />
+        </label>
+        <label class="label cursor-pointer">
+          <span class="label-text">Bollinger Bands</span>
+          <input type="checkbox" name="gosterge" value="Bollinger Bands" class="checkbox checkbox-primary" />
+        </label>
+        <label class="label cursor-pointer">
+          <span class="label-text">Volatility</span>
+          <input type="checkbox" name="gosterge" value="Volatility" class="checkbox checkbox-primary" />
+        </label>
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block font-semibold">Tahmin Edilecek Gün Sayısı</label>
+      <input type="number" name="forecast_days" class="input input-bordered w-full" min="1" max="60" value="7">
+    </div>
+    <div class="mb-4">
+      <label class="block font-semibold">Yatırım Tutarı (USD)</label>
+      <input type="number" name="investment" class="input input-bordered w-full" min="1" value="1000">
+    </div>
+    <script>
+      function togglePortfolioFields() {
+        const type = document.querySelector('input[name="prediction_type"]:checked').value;
+        document.getElementById('single-stock-fields').style.display = type === 'single' ? '' : 'none';
+        document.getElementById('portfolio-fields').style.display = type === 'portfolio' ? '' : 'none';
+      }
+      function addPortfolioRow() {
+        const list = document.getElementById('portfolio-list');
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 mb-2';
+        row.innerHTML = `<select name='portfolio_ticker' class='select select-bordered select-sm w-32' required>{% for t in tickers %}<option value='{{ t }}'>{{ t }}</option>{% endfor %}</select>
+          <input type='number' name='portfolio_weight' placeholder='Ağırlık (%)' class='input input-bordered input-sm w-24' min='1' max='100' required />
+          <button type='button' class='btn btn-error btn-xs' onclick='this.parentNode.remove(); checkPortfolioTotal();'>Sil</button>`;
+        list.appendChild(row);
+        checkPortfolioTotal();
+      }
+      function checkPortfolioTotal() {
+        const weights = Array.from(document.getElementsByName('portfolio_weight')).map(i=>parseFloat(i.value)||0);
+        const total = weights.reduce((a,b)=>a+b,0);
+        const warn = document.getElementById('portfolio-warning');
+        if (total !== 100) {
+          warn.textContent = 'Ağırlıkların toplamı 100 olmalı. Şu an: ' + total;
+          warn.className = 'text-error';
+        } else {
+          warn.textContent = 'Ağırlıklar tamam.';
+          warn.className = 'text-success';
+        }
+      }
+      document.addEventListener('input', function(e) {
+        if (e.target.name === 'portfolio_weight') checkPortfolioTotal();
+      });
+      // Form submitte portföy satırlarını JSON olarak gizli inputa aktar
+      document.querySelector('form').addEventListener('submit', function(e) {
+        if (document.querySelector('input[name="prediction_type"]:checked').value === 'portfolio') {
+          const tickers = Array.from(document.getElementsByName('portfolio_ticker')).map(i=>i.value.trim().toUpperCase());
+          const weights = Array.from(document.getElementsByName('portfolio_weight')).map(i=>parseFloat(i.value)||0);
+          const portfolio = tickers.map((t,i)=>({ticker:t,weight:weights[i]}));
+          let hidden = document.getElementById('portfolio_json');
+          if (!hidden) {
+            hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'portfolio_json';
+            hidden.id = 'portfolio_json';
+            this.appendChild(hidden);
+          }
+          hidden.value = JSON.stringify(portfolio);
+        }
+      });
+    </script>
+    <button type="submit" class="btn btn-primary">Tahmin Et ve Göster</button>
+  </form>
+  <div id="forecast-result" class="mt-8"></div>
+</div>
+{% endblock %} 
