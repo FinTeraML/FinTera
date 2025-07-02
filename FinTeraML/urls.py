@@ -22,4 +22,5 @@ urlpatterns = [
     path('', include('landing.urls')),
     path('auth/', include('auth.urls')),
     path('backtesting/', include('backtesting.urls')),
+    path('automl/', include('automl.urls')),
 ]

@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from automl.models import MLModel, PredictionRecord
+from django.utils import timezone
 
 # Create your views here.
 
@@ -10,18 +12,36 @@ def index(request):
 @login_required
 def dashboard(request):
     """Dashboard view with analytics"""
-    # Mock data for demonstration - will be replaced with real data when apps are implemented
+    # Gerçek veriler
+    toplam_tahmin = PredictionRecord.objects.count()
+    toplam_model = MLModel.objects.count()
+    aktif_model = MLModel.objects.filter(is_active=True).count()
+    
+    # Son tahminler
+    son_tahminler = PredictionRecord.objects.order_by('-created_at')[:5]
+    
+    # En iyi model accuracy'si
+    best_accuracy = 0
+    best_model_name = "Henüz test edilmedi"
+    
+    if toplam_tahmin > 0:
+        # Son 10 tahminden en iyi accuracy'yi bul
+        recent_predictions = PredictionRecord.objects.order_by('-created_at')[:10]
+        for pred in recent_predictions:
+            # R² score hesaplama (accuracy proxy)
+            if pred.rmse > 0:
+                # Basit bir accuracy hesaplama (RMSE'ye dayalı)
+                accuracy = max(0, 100 - (pred.rmse / 100))  # RMSE'yi normalize et
+                if accuracy > best_accuracy:
+                    best_accuracy = accuracy
+                    best_model_name = pred.model
+    
     context = {
-        'total_models': 12,
-        'active_models': 8,
-        'total_datasets': 25,
-        'recent_datasets': 5,
-        'total_backtests': 34,
-        'successful_backtests': 28,
-        'avg_return': 15.7,
-        'best_model_accuracy': 94.2,
-        'models_created_this_month': 3,
-        'datasets_uploaded_this_week': 2,
-        'active_backtests': 4,
+        "toplam_tahmin": toplam_tahmin,
+        "toplam_model": toplam_model,
+        "aktif_model": aktif_model,
+        "son_tahminler": son_tahminler,
+        "best_accuracy": f"{best_accuracy:.2f}%",
+        "best_model_name": best_model_name,
     }
-    return render(request, 'landing/dashboard.html', context)
+    return render(request, "landing/dashboard.html", context)

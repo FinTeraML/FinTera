@@ -155,10 +155,10 @@
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button class="btn btn-primary btn-lg quick-action-btn" onclick="showComingSoon('Create New Model')">
+                        <a href="{% url 'automl_index' %}" class="btn btn-primary btn-lg quick-action-btn flex items-center justify-center">
                             <i class="ri-add-line mr-2"></i>
                             Create New Model
-                        </button>
+                        </a>
                         
                         <button class="btn btn-secondary btn-lg quick-action-btn" onclick="showComingSoon('Upload Dataset')">
                             <i class="ri-upload-line mr-2"></i>
@@ -171,4 +171,64 @@
                         </button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Son Tahminler -->
+            <div class="card bg-base-200 shadow-xl">
+              <div class="card-body">
+                <h2 class="card-title">Son Tahminler</h2>
+                <div class="overflow-x-auto">
+                  <table class="table table-zebra">
+                    <thead>
+                      <tr>
+                        <th>Ticker</th>
+                        <th>Model</th>
+                        <th>RMSE</th>
+                        <th>MAE</th>
+                        <th>Tarih</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for tahmin in son_tahminler %}
+                      <tr>
+                        <td>{{ tahmin.ticker }}</td>
+                        <td>{{ tahmin.model }}</td>
+                        <td>{{ tahmin.rmse|floatformat:4 }}</td>
+                        <td>{{ tahmin.mae|floatformat:4 }}</td>
+                        <td>{{ tahmin.created_at|date:"d/m/Y H:i" }}</td>
+                      </tr>
+                      {% empty %}
+                      <tr>
+                        <td colspan="5" class="text-center">Henüz tahmin yapılmamış</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-title">Toplam Tahmin</div>
+              <div class="stat-value text-primary">{{ toplam_tahmin }}</div>
+              <div class="stat-desc">Yapılan tahmin sayısı</div>
+            </div>
+            
+            <div class="stat">
+              <div class="stat-title">Toplam Model</div>
+              <div class="stat-value text-secondary">{{ toplam_model }}</div>
+              <div class="stat-desc">Oluşturulan model sayısı</div>
+            </div>
+            
+            <div class="stat">
+              <div class="stat-title">Aktif Model</div>
+              <div class="stat-value text-accent">{{ aktif_model }}</div>
+              <div class="stat-desc">Aktif model sayısı</div>
+            </div>
+            
+            <div class="stat">
+              <div class="stat-title">En İyi Model Accuracy</div>
+              <div class="stat-value text-success">{{ best_accuracy }}</div>
+              <div class="stat-desc">{{ best_model_name }}</div>
+            </div>
 {% endblock %} 

@@ -24,10 +24,9 @@
             </a>
             
             <!-- AutoML Link -->
-            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="showComingSoon('AutoML'); closeMobileMenuOnClick();">
+            <a href="{% url 'automl_index' %}" class="flex items-center p-3 rounded-lg {% if request.resolver_match.url_name == 'automl_index' %}bg-primary text-primary-content{% else %}hover:bg-base-300 text-base-content{% endif %} transition-all duration-200 sidebar-nav-item relative" onclick="closeMobileMenuOnClick()">
                 <i class="ri-brain-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
                 <span class="sidebar-text">AutoML</span>
-                <span class="ml-auto badge badge-sm badge-info sidebar-text">Soon</span>
             </a>
             
             <!-- Backtesting Link -->
@@ -49,7 +48,8 @@
                 <span class="sidebar-text">Datasets</span>
             </a>
             
-            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="showComingSoon('Models'); closeMobileMenuOnClick();">
+            <a href="{% url 'models_list' %}" class="flex items-center p-3 rounded-lg {% if request.resolver_match.url_name == 'models_list' %}bg-primary text-primary-content{% else %}hover:bg-base-300 text-base-content{% endif %} transition-all duration-200 sidebar-nav-item relative" onclick="closeMobileMenuOnClick()">
+                <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-amber-400 rounded-r-md sidebar-active-indicator {% if request.resolver_match.url_name != 'models_list' %}hidden{% endif %}"></div>
                 <i class="ri-cpu-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
                 <span class="sidebar-text">Models</span>
             </a>
