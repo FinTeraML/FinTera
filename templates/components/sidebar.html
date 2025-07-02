@@ -31,10 +31,9 @@
             </a>
             
             <!-- Backtesting Link -->
-            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="showComingSoon('Backtesting'); closeMobileMenuOnClick();">
+            <a href="{% url 'backtesting:dashboard' %}" class="flex items-center p-3 rounded-lg hover:bg-base-300 text-base-content transition-all duration-200 sidebar-nav-item relative hover:translate-x-0.5 hover:shadow-md" onclick="closeMobileMenuOnClick()">
                 <i class="ri-line-chart-line mr-3 flex-shrink-0 text-xl transition-all duration-200 sidebar-nav-icon"></i>
                 <span class="sidebar-text">Backtesting</span>
-                <span class="ml-auto badge badge-sm badge-info sidebar-text">Soon</span>
             </a>
             
             <!-- Divider -->

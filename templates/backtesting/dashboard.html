@@ -1,0 +1,211 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Backtesting Dashboard - FinTera{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-base-content">Backtesting Dashboard</h1>
+            <p class="mt-2 text-base-content/70">Manage your trading strategies and backtest results</p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex space-x-3">
+            <a href="{% url 'backtesting:strategy_create' %}" class="btn btn-primary">
+                <i class="ri-add-line mr-2"></i>
+                New Strategy
+            </a>
+            <a href="{% url 'backtesting:backtest_create' %}" class="btn btn-secondary">
+                <i class="ri-play-line mr-2"></i>
+                Run Backtest
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Strategies -->
+        <div class="card bg-gradient-to-br from-primary to-primary-focus text-primary-content shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium opacity-90">Total Strategies</h3>
+                        <p class="text-3xl font-bold">{{ total_strategies }}</p>
+                        <p class="text-sm opacity-75">Active strategies</p>
+                    </div>
+                    <i class="ri-strategy-line text-4xl opacity-20"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Backtests -->
+        <div class="card bg-gradient-to-br from-secondary to-secondary-focus text-secondary-content shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium opacity-90">Total Backtests</h3>
+                        <p class="text-3xl font-bold">{{ total_backtests }}</p>
+                        <p class="text-sm opacity-75">{{ successful_backtests }} successful</p>
+                    </div>
+                    <i class="ri-line-chart-line text-4xl opacity-20"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Return -->
+        <div class="card bg-gradient-to-br from-accent to-accent-focus text-accent-content shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium opacity-90">Average Return</h3>
+                        <p class="text-3xl font-bold">{{ avg_return|floatformat:1 }}%</p>
+                        <p class="text-sm opacity-75">Across all backtests</p>
+                    </div>
+                    <i class="ri-money-dollar-circle-line text-4xl opacity-20"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Backtests -->
+        <div class="card bg-gradient-to-br from-info to-info-focus text-info-content shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium opacity-90">Active Backtests</h3>
+                        <p class="text-3xl font-bold">{{ active_backtests }}</p>
+                        <p class="text-sm opacity-75">Currently running</p>
+                    </div>
+                    <i class="ri-timer-line text-4xl opacity-20"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Strategies -->
+        <div class="card bg-base-200 shadow-lg">
+            <div class="card-header p-6 pb-0">
+                <div class="flex items-center justify-between">
+                    <h2 class="card-title text-xl">Recent Strategies</h2>
+                    <a href="{% url 'backtesting:strategy_list' %}" class="text-sm text-primary hover:underline">View all</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_strategies %}
+                    <div class="space-y-4">
+                        {% for strategy in recent_strategies %}
+                            <div class="flex items-center justify-between p-3 bg-base-100 rounded-lg hover:bg-base-300 transition-colors">
+                                <div>
+                                    <h3 class="font-medium">{{ strategy.name }}</h3>
+                                    <p class="text-sm text-base-content/70">{{ strategy.get_strategy_type_display }} • {{ strategy.symbols.count }} symbols</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="badge badge-{{ strategy.is_active|yesno:'success,warning' }}">
+                                        {{ strategy.is_active|yesno:'Active,Inactive' }}
+                                    </span>
+                                    <a href="{% url 'backtesting:strategy_detail' strategy.id %}" class="btn btn-sm btn-ghost">
+                                        <i class="ri-eye-line"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="ri-strategy-line text-4xl text-base-content/30"></i>
+                        <p class="text-base-content/70 mt-2">No strategies created yet</p>
+                        <a href="{% url 'backtesting:strategy_create' %}" class="btn btn-primary btn-sm mt-4">Create Your First Strategy</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Backtests -->
+        <div class="card bg-base-200 shadow-lg">
+            <div class="card-header p-6 pb-0">
+                <div class="flex items-center justify-between">
+                    <h2 class="card-title text-xl">Recent Backtests</h2>
+                    <a href="{% url 'backtesting:backtest_list' %}" class="text-sm text-primary hover:underline">View all</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_backtests %}
+                    <div class="space-y-4">
+                        {% for backtest in recent_backtests %}
+                            <div class="flex items-center justify-between p-3 bg-base-100 rounded-lg hover:bg-base-300 transition-colors">
+                                <div>
+                                    <h3 class="font-medium">{{ backtest.name }}</h3>
+                                    <p class="text-sm text-base-content/70">{{ backtest.strategy.name }}</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="badge badge-{% if backtest.status == 'completed' %}success{% elif backtest.status == 'failed' %}error{% elif backtest.status == 'running' %}warning{% else %}info{% endif %}">
+                                        {{ backtest.get_status_display }}
+                                    </span>
+                                    {% if backtest.status == 'completed' %}
+                                        <span class="text-sm font-medium {% if backtest.total_return > 0 %}text-success{% else %}text-error{% endif %}">
+                                            {{ backtest.return_percentage|floatformat:1 }}%
+                                        </span>
+                                    {% endif %}
+                                    <a href="{% url 'backtesting:backtest_detail' backtest.id %}" class="btn btn-sm btn-ghost">
+                                        <i class="ri-eye-line"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="ri-line-chart-line text-4xl text-base-content/30"></i>
+                        <p class="text-base-content/70 mt-2">No backtests run yet</p>
+                        <a href="{% url 'backtesting:backtest_create' %}" class="btn btn-secondary btn-sm mt-4">Run Your First Backtest</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Best Performance -->
+    {% if best_backtest %}
+    <div class="card bg-base-200 shadow-lg">
+        <div class="card-header p-6 pb-0">
+            <h2 class="card-title text-xl">Best Performing Backtest</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="stats stats-vertical lg:stats-horizontal shadow">
+                    <div class="stat">
+                        <div class="stat-figure text-primary">
+                            <i class="ri-trophy-line text-2xl"></i>
+                        </div>
+                        <div class="stat-title">Return</div>
+                        <div class="stat-value text-primary">{{ best_backtest.return_percentage|floatformat:1 }}%</div>
+                        <div class="stat-desc">{{ best_backtest.name }}</div>
+                    </div>
+                </div>
+                <div class="stats stats-vertical lg:stats-horizontal shadow">
+                    <div class="stat">
+                        <div class="stat-figure text-secondary">
+                            <i class="ri-bar-chart-line text-2xl"></i>
+                        </div>
+                        <div class="stat-title">Sharpe Ratio</div>
+                        <div class="stat-value text-secondary">{{ best_backtest.sharpe_ratio|floatformat:2 }}</div>
+                        <div class="stat-desc">Risk-adjusted return</div>
+                    </div>
+                </div>
+                <div class="stats stats-vertical lg:stats-horizontal shadow">
+                    <div class="stat">
+                        <div class="stat-figure text-accent">
+                            <i class="ri-exchange-line text-2xl"></i>
+                        </div>
+                        <div class="stat-title">Total Trades</div>
+                        <div class="stat-value text-accent">{{ best_backtest.total_trades }}</div>
+                        <div class="stat-desc">{{ best_backtest.win_rate|floatformat:1 }}% win rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

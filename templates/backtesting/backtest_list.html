@@ -1,0 +1,156 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Backtests - FinTera{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold">Backtests</h1>
+            <p class="text-base-content/70 mt-1">Review and analyze your strategy backtesting results</p>
+        </div>
+        <a href="{% url 'backtesting:backtest_create' %}" class="btn btn-primary">
+            <i class="ri-add-line mr-2"></i>
+            New Backtest
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats stats-vertical lg:stats-horizontal shadow mb-8 w-full">
+        <div class="stat">
+            <div class="stat-title">Total Backtests</div>
+            <div class="stat-value">{{ total_backtests }}</div>
+            <div class="stat-desc">All backtests created</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Completed</div>
+            <div class="stat-value text-success">{{ completed_backtests }}</div>
+            <div class="stat-desc">Successfully finished</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Running</div>
+            <div class="stat-value text-warning">{{ running_backtests }}</div>
+            <div class="stat-desc">Currently processing</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Avg Return</div>
+            <div class="stat-value text-primary">{{ avg_return|floatformat:1|default:"N/A" }}%</div>
+            <div class="stat-desc">From completed tests</div>
+        </div>
+    </div>
+
+    {% if backtest_list %}
+        <!-- Backtests Table -->
+        <div class="card bg-base-200 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title mb-4">All Backtests</h2>
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>Strategy</th>
+                                <th>Period</th>
+                                <th>Capital</th>
+                                <th>Return</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for backtest in backtest_list %}
+                                <tr>
+                                    <td>
+                                        <div class="flex items-center">
+                                            <div>
+                                                <div class="font-bold">
+                                                    <a href="{% url 'backtesting:backtest_detail' backtest.id %}" class="link link-primary">
+                                                        {{ backtest.strategy.name }}
+                                                    </a>
+                                                </div>
+                                                <div class="text-sm opacity-50">{{ backtest.strategy.get_strategy_type_display }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm">
+                                            {{ backtest.start_date|date:"M d" }} - {{ backtest.end_date|date:"M d, Y" }}
+                                        </div>
+                                        <div class="text-xs opacity-50">
+                                            {{ backtest.start_date|timesince:backtest.end_date|truncatewords:2 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="font-bold">${{ backtest.initial_capital|floatformat:0 }}</div>
+                                        {% if backtest.status == 'completed' %}
+                                            <div class="text-xs opacity-50">→ ${{ backtest.final_capital|floatformat:0 }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if backtest.status == 'completed' %}
+                                            <div class="badge badge-{% if backtest.total_return > 0 %}success{% elif backtest.total_return < 0 %}error{% else %}neutral{% endif %}">
+                                                {{ backtest.total_return|floatformat:1 }}%
+                                            </div>
+                                            <div class="text-xs opacity-50">
+                                                ${{ backtest.total_return|floatformat:0 }}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-base-content/50">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-{% if backtest.status == 'completed' %}success{% elif backtest.status == 'running' %}warning{% elif backtest.status == 'failed' %}error{% else %}neutral{% endif %} badge-sm">
+                                            {{ backtest.get_status_display }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm">{{ backtest.created_at|date:"M d, Y" }}</div>
+                                        <div class="text-xs opacity-50">{{ backtest.created_at|date:"H:i" }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="flex space-x-2">
+                                            <a href="{% url 'backtesting:backtest_detail' backtest.id %}" class="btn btn-ghost btn-xs">
+                                                View
+                                            </a>
+                                            {% if backtest.status == 'completed' %}
+                                                <a href="{% url 'backtesting:backtest_create_with_strategy' backtest.strategy.id %}" class="btn btn-primary btn-xs">
+                                                    Rerun
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="hero bg-base-200 rounded-lg shadow-lg">
+            <div class="hero-content text-center">
+                <div class="max-w-md">
+                    <div class="text-6xl mb-4">📊</div>
+                    <h1 class="text-3xl font-bold">No backtests yet</h1>
+                    <p class="py-6 text-base-content/70">
+                        Start testing your strategies by creating your first backtest
+                    </p>
+                    <div class="space-y-3">
+                        <a href="{% url 'backtesting:backtest_create' %}" class="btn btn-primary btn-lg">
+                            <i class="ri-add-line mr-2"></i>
+                            Create First Backtest
+                        </a>
+                        <div>
+                            <a href="{% url 'backtesting:strategy_list' %}" class="link link-primary">
+                                Or view your strategies first →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

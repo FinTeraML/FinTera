@@ -1,0 +1,50 @@
+<div class="card bg-base-100 shadow-sm mt-4" id="strategy-preview">
+    <div class="card-body">
+        <div class="flex justify-between items-start">
+            <div>
+                <h3 class="card-title text-base">{{ strategy.name }}</h3>
+                <p class="text-base-content/70 text-sm mt-1">{{ strategy.description|truncatechars:100 }}</p>
+            </div>
+            <div class="badge badge-outline">{{ strategy.get_strategy_type_display }}</div>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+            <div>
+                <span class="text-base-content/70">Symbols:</span>
+                <span class="font-medium ml-1">{{ strategy.symbols.count }}</span>
+            </div>
+            <div>
+                <span class="text-base-content/70">Stop Loss:</span>
+                <span class="font-medium ml-1">{{ strategy.stop_loss_percent }}%</span>
+            </div>
+            <div>
+                <span class="text-base-content/70">Take Profit:</span>
+                <span class="font-medium ml-1">{{ strategy.take_profit_percent }}%</span>
+            </div>
+            <div>
+                <span class="text-base-content/70">Max Position:</span>
+                <span class="font-medium ml-1">{{ strategy.max_position_size|floatformat:1 }}</span>
+            </div>
+        </div>
+
+        <!-- Strategy validation status -->
+        <div class="mt-4">
+            {% if strategy.symbols.count == 0 %}
+                <div class="alert alert-warning py-2">
+                    <i class="ri-alert-line mr-2"></i>
+                    <span class="text-sm">This strategy has no symbols configured.</span>
+                </div>
+            {% elif not strategy.get_buy_rules_list.exists and not strategy.get_sell_rules_list.exists %}
+                <div class="alert alert-warning py-2">
+                    <i class="ri-alert-line mr-2"></i>
+                    <span class="text-sm">This strategy has no trading rules configured.</span>
+                </div>
+            {% else %}
+                <div class="alert alert-success py-2">
+                    <i class="ri-check-line mr-2"></i>
+                    <span class="text-sm">Strategy is ready for backtesting.</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div> 

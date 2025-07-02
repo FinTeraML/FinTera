@@ -1,0 +1,265 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}{{ backtest.strategy.name }} Backtest - FinTera{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold">Backtest Results</h1>
+            <p class="text-base-content/70 mt-1">{{ backtest.strategy.name }} - {{ backtest.start_date|date:"M d" }} to {{ backtest.end_date|date:"M d, Y" }}</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'backtesting:strategy_detail' backtest.strategy.id %}" class="btn btn-outline">
+                View Strategy
+            </a>
+            <a href="{% url 'backtesting:backtest_list' %}" class="btn btn-outline">
+                Back to Backtests
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Alert -->
+    {% if backtest.status == 'failed' %}
+        <div class="alert alert-error mb-6">
+            <i class="ri-error-warning-line mr-2"></i>
+            <div>
+                <h3 class="font-bold">Backtest Failed</h3>
+                <div class="text-sm">{{ backtest.error_message|default:"An error occurred during backtesting. Please try again." }}</div>
+            </div>
+        </div>
+    {% elif backtest.status == 'running' %}
+        <div class="alert alert-info mb-6">
+            <i class="ri-loader-line mr-2 animate-spin"></i>
+            <div>
+                <h3 class="font-bold">Backtest Running</h3>
+                <div class="text-sm">Your backtest is currently processing. Results will appear here when complete.</div>
+            </div>
+        </div>
+    {% elif backtest.status == 'completed' %}
+        <div class="alert alert-success mb-6">
+            <i class="ri-check-line mr-2"></i>
+            <div>
+                <h3 class="font-bold">Backtest Completed</h3>
+                <div class="text-sm">Backtest finished successfully on {{ backtest.updated_at|date:"M d, Y \a\t H:i" }}</div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if backtest.status == 'completed' %}
+        <!-- Performance Summary -->
+        <div class="stats stats-vertical lg:stats-horizontal shadow mb-8 w-full">
+            <div class="stat">
+                <div class="stat-title">Total Return</div>
+                <div class="stat-value {% if backtest.total_return > 0 %}text-success{% elif backtest.total_return < 0 %}text-error{% endif %}">
+                    {{ backtest.total_return|floatformat:1 }}%
+                </div>
+                <div class="stat-desc">{{ backtest.start_date|date:"M d" }} - {{ backtest.end_date|date:"M d, Y" }}</div>
+            </div>
+            
+            <div class="stat">
+                <div class="stat-title">Final Capital</div>
+                <div class="stat-value">${{ backtest.final_capital|floatformat:0 }}</div>
+                <div class="stat-desc">from ${{ backtest.initial_capital|floatformat:0 }}</div>
+            </div>
+            
+            <div class="stat">
+                <div class="stat-title">Sharpe Ratio</div>
+                <div class="stat-value text-primary">{{ backtest.sharpe_ratio|floatformat:2|default:"N/A" }}</div>
+                <div class="stat-desc">Risk-adjusted return</div>
+            </div>
+            
+            <div class="stat">
+                <div class="stat-title">Max Drawdown</div>
+                <div class="stat-value text-warning">{{ backtest.max_drawdown|floatformat:1|default:"N/A" }}%</div>
+                <div class="stat-desc">Worst decline</div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="card bg-base-200 shadow-lg mb-8">
+            <div class="card-body">
+                <h2 class="card-title">Performance Metrics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                    <div class="space-y-3">
+                        <h3 class="font-medium">Returns</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Total Return:</span>
+                                <span class="font-medium {% if backtest.total_return > 0 %}text-success{% elif backtest.total_return < 0 %}text-error{% endif %}">
+                                    {{ backtest.total_return|floatformat:2 }}%
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Annualized Return:</span>
+                                <span class="font-medium">{{ backtest.annualized_return|floatformat:2|default:"N/A" }}%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Volatility:</span>
+                                <span class="font-medium">{{ backtest.volatility|floatformat:2|default:"N/A" }}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="font-medium">Risk Metrics</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Sharpe Ratio:</span>
+                                <span class="font-medium">{{ backtest.sharpe_ratio|floatformat:2|default:"N/A" }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Max Drawdown:</span>
+                                <span class="font-medium text-error">{{ backtest.max_drawdown|floatformat:2|default:"N/A" }}%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Calmar Ratio:</span>
+                                <span class="font-medium">{{ backtest.calmar_ratio|floatformat:2|default:"N/A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="font-medium">Trading</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Total Trades:</span>
+                                <span class="font-medium">{{ backtest.total_trades|default:"0" }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Win Rate:</span>
+                                <span class="font-medium">{{ backtest.win_rate|floatformat:1|default:"N/A" }}%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/70">Profit Factor:</span>
+                                <span class="font-medium">{{ backtest.profit_factor|floatformat:2|default:"N/A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Strategy Information -->
+    <div class="card bg-base-200 shadow-lg mb-8">
+        <div class="card-body">
+            <h2 class="card-title">Strategy Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div>
+                    <h3 class="font-medium mb-3">{{ backtest.strategy.name }}</h3>
+                    <p class="text-base-content/70 mb-4">{{ backtest.strategy.description }}</p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Type:</span>
+                            <div class="badge badge-outline">{{ backtest.strategy.get_strategy_type_display }}</div>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Symbols:</span>
+                            <span>{{ backtest.strategy.symbols.count }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'backtesting:strategy_detail' backtest.strategy.id %}" class="link link-primary">
+                            View Full Strategy Details →
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-medium mb-3">Backtest Configuration</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Period:</span>
+                            <span>{{ backtest.start_date|date:"M d, Y" }} - {{ backtest.end_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Initial Capital:</span>
+                            <span>${{ backtest.initial_capital|floatformat:0 }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Commission:</span>
+                            <span>{{ backtest.commission_rate|floatformat:4|default:"0.0000" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Slippage:</span>
+                            <span>{{ backtest.slippage_rate|floatformat:4|default:"0.0000" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Created:</span>
+                            <span>{{ backtest.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if backtest.status == 'completed' and trades %}
+        <!-- Trade History -->
+        <div class="card bg-base-200 shadow-lg">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title">Trade History</h2>
+                    <div class="badge badge-outline">{{ backtest.total_trades|default:"0" }} trades</div>
+                </div>
+                
+                {% if trades %}
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>P&L</th>
+                                    <th>Signal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in trades %}
+                                    <tr>
+                                        <td><div class="badge badge-primary badge-sm">{{ trade.symbol }}</div></td>
+                                        <td>
+                                            <div class="badge badge-{% if trade.trade_type == 'buy' %}success{% else %}error{% endif %} badge-sm">
+                                                {{ trade.trade_type|capfirst }}
+                                            </div>
+                                        </td>
+                                        <td>{{ trade.timestamp|date:"M d, Y H:i" }}</td>
+                                        <td>${{ trade.price|floatformat:2 }}</td>
+                                        <td>{{ trade.quantity }}</td>
+                                        <td class="{% if trade.profit_loss > 0 %}text-success{% elif trade.profit_loss < 0 %}text-error{% endif %} font-medium">
+                                            ${{ trade.profit_loss|floatformat:2 }}
+                                        </td>
+                                        <td class="text-sm text-base-content/70">{{ trade.signal|truncatechars:30 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if backtest.total_trades > 50 %}
+                        <div class="alert alert-info mt-4">
+                            <i class="ri-information-line mr-2"></i>
+                            <span>Showing first 50 of {{ backtest.total_trades }} trades</span>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="hero bg-base-100 rounded-lg">
+                        <div class="hero-content text-center py-8">
+                            <div>
+                                <div class="text-4xl mb-3">📊</div>
+                                <h3 class="font-bold text-lg">No trades executed</h3>
+                                <p class="text-base-content/70 py-2">The strategy did not generate any trading signals during this period</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

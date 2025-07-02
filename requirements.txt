@@ -1,1 +1,8 @@
-django
+Django
+python-decouple
+yfinance
+pandas
+numpy
+pandas-ta
+vectorbt
+plotly

@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'landing',
     'auth',
+    'automl',
+    'backtesting',
 ]
 
 MIDDLEWARE = [
@@ -127,14 +129,14 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email settings for password reset
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
 # For production, use:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-app-password'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'dummy@email.com'
+EMAIL_HOST_PASSWORD = 'dummy_password'
 DEFAULT_FROM_EMAIL = 'noreply@fintera.com'  # Change this in production
 
 # Login/Logout redirect URLs

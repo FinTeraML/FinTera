@@ -1,0 +1,167 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Strategies - FinTera{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold">Trading Strategies</h1>
+            <p class="text-base-content/70 mt-1">Manage and monitor your algorithmic trading strategies</p>
+        </div>
+        <a href="{% url 'backtesting:strategy_create' %}" class="btn btn-primary">
+            <i class="ri-add-line mr-2"></i>
+            New Strategy
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats stats-vertical lg:stats-horizontal shadow mb-8 w-full">
+        <div class="stat">
+            <div class="stat-title">Total Strategies</div>
+            <div class="stat-value">{{ total_strategies }}</div>
+            <div class="stat-desc">All strategies created</div>
+        </div>
+        
+        <div class="stat">
+            <div class="stat-title">Active Strategies</div>
+            <div class="stat-value text-success">{{ active_strategies }}</div>
+            <div class="stat-desc">Ready for backtesting</div>
+        </div>
+        
+        <div class="stat">
+            <div class="stat-title">Average Performance</div>
+            <div class="stat-value text-primary">{{ avg_performance|floatformat:1|default:"N/A" }}%</div>
+            <div class="stat-desc">From completed backtests</div>
+        </div>
+        
+        <div class="stat">
+            <div class="stat-title">Best Strategy</div>
+            <div class="stat-value text-accent">{{ best_strategy_return|floatformat:1|default:"N/A" }}%</div>
+            <div class="stat-desc">Top performing strategy</div>
+        </div>
+    </div>
+
+    {% if strategies %}
+        <!-- Strategies Grid -->
+        <div class="grid gap-6">
+            {% for strategy in strategies %}
+                <div class="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="card-body">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3">
+                                    <h3 class="card-title text-xl">{{ strategy.name }}</h3>
+                                    <div class="badge badge-{% if strategy.is_active %}success{% else %}warning{% endif %}">
+                                        {{ strategy.is_active|yesno:'Active,Inactive' }}
+                                    </div>
+                                    <div class="badge badge-outline">{{ strategy.get_strategy_type_display }}</div>
+                                </div>
+                                
+                                <p class="text-base-content/70 mt-2">{{ strategy.description|truncatechars:150 }}</p>
+                                
+                                <div class="flex flex-wrap gap-4 mt-4 text-sm">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="ri-bar-chart-line text-primary"></i>
+                                        <span class="font-medium">Symbols:</span>
+                                        <span>{{ strategy.symbols.count }}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="ri-history-line text-info"></i>
+                                        <span class="font-medium">Backtests:</span>
+                                        <span>{{ strategy.backtests.count }}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="ri-calendar-line text-accent"></i>
+                                        <span class="font-medium">Created:</span>
+                                        <span>{{ strategy.created_at|date:"M d, Y" }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Trading Symbols -->
+                                {% if strategy.symbols.exists %}
+                                <div class="mt-4">
+                                    <span class="text-sm font-medium text-base-content/70">Trading Symbols:</span>
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        {% for symbol in strategy.symbols.all|slice:":8" %}
+                                            <div class="badge badge-xs badge-primary">{{ symbol.symbol }}</div>
+                                        {% endfor %}
+                                        {% if strategy.symbols.count > 8 %}
+                                            <div class="badge badge-xs badge-outline">+{{ strategy.symbols.count|add:-8 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Performance Stats -->
+                            {% if strategy.latest_backtest %}
+                            <div class="stats shadow mt-4 lg:mt-0">
+                                <div class="stat place-items-center">
+                                    <div class="stat-title text-xs">Total Return</div>
+                                    <div class="stat-value text-2xl {% if strategy.latest_backtest.total_return > 0 %}text-success{% elif strategy.latest_backtest.total_return < 0 %}text-error{% endif %}">
+                                        {{ strategy.latest_backtest.total_return|floatformat:1 }}%
+                                    </div>
+                                </div>
+                                <div class="stat place-items-center">
+                                    <div class="stat-title text-xs">Sharpe Ratio</div>
+                                    <div class="stat-value text-2xl text-primary">{{ strategy.latest_backtest.sharpe_ratio|floatformat:2|default:"N/A" }}</div>
+                                </div>
+                                <div class="stat place-items-center">
+                                    <div class="stat-title text-xs">Max Drawdown</div>
+                                    <div class="stat-value text-2xl text-warning">{{ strategy.latest_backtest.max_drawdown|floatformat:1|default:"N/A" }}%</div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center mt-4 lg:mt-0">
+                                <div class="text-base-content/50 text-4xl mb-2">📊</div>
+                                <p class="text-sm text-base-content/70">No backtests yet</p>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Actions -->
+                            <div class="card-actions mt-4 lg:mt-0 lg:ml-6">
+                                <div class="flex flex-col space-y-2">
+                                    <a href="{% url 'backtesting:strategy_detail' strategy.id %}" class="btn btn-outline btn-sm">
+                                        <i class="ri-eye-line mr-2"></i>
+                                        View Details
+                                    </a>
+                                    <a href="{% url 'backtesting:backtest_create_with_strategy' strategy.id %}" class="btn btn-primary btn-sm">
+                                        <i class="ri-play-line mr-2"></i>
+                                        Run Backtest
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="hero bg-base-200 rounded-lg shadow-lg">
+            <div class="hero-content text-center">
+                <div class="max-w-md">
+                    <div class="text-6xl mb-4">🚀</div>
+                    <h1 class="text-3xl font-bold">No strategies yet</h1>
+                    <p class="py-6 text-base-content/70">
+                        Create your first trading strategy to start backtesting and analyzing market opportunities.
+                    </p>
+                    <div class="space-y-3">
+                        <a href="{% url 'backtesting:strategy_create' %}" class="btn btn-primary btn-lg">
+                            <i class="ri-add-line mr-2"></i>
+                            Create First Strategy
+                        </a>
+                        <div>
+                            <a href="{% url 'backtesting:dashboard' %}" class="link link-primary">
+                                Learn about trading strategies →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

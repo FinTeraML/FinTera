@@ -1,0 +1,284 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Create Backtest - FinTera{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold">Create Backtest</h1>
+            <p class="text-base-content/70 mt-1">Test your trading strategy against historical data</p>
+        </div>
+        <a href="{% url 'backtesting:backtest_list' %}" class="btn btn-outline">
+            Back to Backtests
+        </a>
+    </div>
+
+    <!-- Main Form -->
+    <div class="card bg-base-200 shadow-lg">
+        <div class="card-body">
+            <!-- Error Alert Container -->
+            <div id="form-alerts"></div>
+            
+            <form method="post" class="space-y-8" 
+                  hx-post="{% url 'backtesting:backtest_create' %}"
+                  hx-target="#form-alerts"
+                  hx-indicator="#loading-indicator"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+                {% csrf_token %}
+                
+                <!-- Step 1: Backtest Details -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="badge badge-primary">1</div>
+                        <h2 class="text-xl font-semibold">Backtest Details</h2>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Backtest Name <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.name.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Trading Strategy <span class="text-error">*</span></span>
+                            </label>
+                            <select name="strategy" class="select select-bordered" required
+                                    hx-get="{% url 'backtesting:get_strategy_preview' %}"
+                                    hx-target="#strategy-preview-container"
+                                    hx-trigger="change"
+                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                    hx-include="this">
+                                <option value="">Choose a strategy...</option>
+                                {% for strategy in strategies %}
+                                    <option value="{{ strategy.id }}" {% if strategy.id == selected_strategy_id %}selected{% endif %}>
+                                        {{ strategy.name }} ({{ strategy.get_strategy_type_display }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.strategy.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.strategy.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Strategy Preview Container -->
+                    <div id="strategy-preview-container">
+                        {% if strategy %}
+                            {% include 'backtesting/partials/strategy_preview.html' %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Step 2: Time Period -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="badge badge-primary">2</div>
+                        <h2 class="text-xl font-semibold">Set Time Period</h2>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Start Date <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.start_date.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">End Date <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.end_date.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Initial Capital -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="badge badge-primary">3</div>
+                        <h2 class="text-xl font-semibold">Initial Capital</h2>
+                    </div>
+                    
+                    <div class="form-control max-w-md">
+                        <label class="label">
+                            <span class="label-text">Initial Capital <span class="text-error">*</span></span>
+                            <span class="label-text-alt">USD</span>
+                        </label>
+                        {{ form.initial_capital }}
+                        {% if form.initial_capital.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.initial_capital.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                        <label class="label">
+                            <span class="label-text-alt">The amount of capital to start the backtest with</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Form Errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        <i class="ri-error-warning-line mr-2"></i>
+                        <span>{{ form.non_field_errors.0 }}</span>
+                    </div>
+                {% endif %}
+
+                <!-- Submit -->
+                <div class="card-actions justify-end">
+                    <a href="{% url 'backtesting:backtest_list' %}" class="btn btn-outline">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <i class="ri-play-line mr-2"></i>
+                        <span class="btn-text">Start Backtest</span>
+                        <span class="loading loading-spinner loading-sm hidden" id="loading-indicator"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tips Section -->
+    <div class="card bg-base-100 shadow-lg mt-8">
+        <div class="card-body">
+            <h3 class="card-title">Backtesting Tips</h3>
+            <div class="grid md:grid-cols-2 gap-6 mt-4 text-sm">
+                <div>
+                    <h4 class="font-medium mb-2 flex items-center">
+                        <i class="ri-bar-chart-line mr-2 text-primary"></i>
+                        Data Quality
+                    </h4>
+                    <ul class="space-y-1 text-base-content/70">
+                        <li>• Ensure sufficient historical data is available</li>
+                        <li>• Avoid periods with market closures or holidays</li>
+                        <li>• Consider market volatility during chosen period</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium mb-2 flex items-center">
+                        <i class="ri-speed-line mr-2 text-secondary"></i>
+                        Performance
+                    </h4>
+                    <ul class="space-y-1 text-base-content/70">
+                        <li>• Larger time periods take longer to process</li>
+                        <li>• Multiple symbols increase computation time</li>
+                        <li>• Results will be emailed when complete</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle form submission responses
+    document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        if (evt.detail.elt.tagName === 'FORM') {
+            const submitBtn = document.getElementById('submit-btn');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const btnText = submitBtn.querySelector('.btn-text');
+            
+            submitBtn.disabled = true;
+            btnText.textContent = 'Starting Backtest...';
+            loadingIndicator.classList.remove('hidden');
+        }
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.elt.tagName === 'FORM') {
+            const submitBtn = document.getElementById('submit-btn');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const btnText = submitBtn.querySelector('.btn-text');
+            
+            submitBtn.disabled = false;
+            btnText.textContent = 'Start Backtest';
+            loadingIndicator.classList.add('hidden');
+            
+            if (evt.detail.xhr.status === 200) {
+                try {
+                    const response = JSON.parse(evt.detail.xhr.responseText);
+                    if (response.success) {
+                        // Show success message
+                        document.getElementById('form-alerts').innerHTML = `
+                            <div class="alert alert-success mb-4">
+                                <i class="ri-check-line mr-2"></i>
+                                <span>${response.message}</span>
+                            </div>
+                        `;
+                        
+                        // Redirect after a short delay
+                        setTimeout(() => {
+                            window.location.href = response.redirect_url;
+                        }, 2000);
+                    }
+                } catch (e) {
+                    // Response is likely HTML (form errors), let HTMX handle it
+                }
+            } else {
+                // Handle error response
+                try {
+                    const response = JSON.parse(evt.detail.xhr.responseText);
+                    if (response.error) {
+                        document.getElementById('form-alerts').innerHTML = `
+                            <div class="alert alert-error mb-4">
+                                <i class="ri-error-warning-line mr-2"></i>
+                                <span>${response.error}</span>
+                            </div>
+                        `;
+                    }
+                } catch (e) {
+                    document.getElementById('form-alerts').innerHTML = `
+                        <div class="alert alert-error mb-4">
+                            <i class="ri-error-warning-line mr-2"></i>
+                            <span>An unexpected error occurred. Please try again.</span>
+                        </div>
+                    `;
+                }
+            }
+        }
+    });
+
+    // Handle strategy selection for preview
+    document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        if (evt.detail.elt.name === 'strategy') {
+            const strategyId = evt.detail.elt.value;
+            if (strategyId) {
+                // Add strategy_id as a parameter
+                const url = new URL(evt.detail.requestConfig.url, window.location.origin);
+                url.searchParams.set('strategy_id', strategyId);
+                evt.detail.requestConfig.url = url.toString();
+            } else {
+                // Clear preview if no strategy selected
+                document.getElementById('strategy-preview-container').innerHTML = '';
+                evt.preventDefault(); // Don't make the request
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

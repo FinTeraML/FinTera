@@ -1,0 +1,41 @@
+{% if backtest.status == 'pending' %}
+    <div class="alert alert-info">
+        <i class="ri-time-line mr-2"></i>
+        <span>Backtest is pending... Please wait.</span>
+    </div>
+{% elif backtest.status == 'running' %}
+    <div class="alert alert-warning">
+        <span class="loading loading-spinner loading-sm mr-2"></span>
+        <span>Backtest is running... This may take a few moments.</span>
+    </div>
+{% elif backtest.status == 'completed' %}
+    <div class="alert alert-success">
+        <i class="ri-check-line mr-2"></i>
+        <span>Backtest completed successfully!</span>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+        <div class="stat">
+            <div class="stat-title">Total Return</div>
+            <div class="stat-value text-sm {% if backtest.total_return > 0 %}text-success{% elif backtest.total_return < 0 %}text-error{% endif %}">
+                {{ backtest.total_return|floatformat:2 }}%
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Total Trades</div>
+            <div class="stat-value text-sm">{{ backtest.total_trades }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Execution Time</div>
+            <div class="stat-value text-sm">{{ backtest.execution_time|floatformat:2 }}s</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Final Capital</div>
+            <div class="stat-value text-sm">${{ backtest.final_capital|floatformat:2 }}</div>
+        </div>
+    </div>
+{% elif backtest.status == 'failed' %}
+    <div class="alert alert-error">
+        <i class="ri-error-warning-line mr-2"></i>
+        <span>Backtest failed: {{ backtest.error_message }}</span>
+    </div>
+{% endif %} 
